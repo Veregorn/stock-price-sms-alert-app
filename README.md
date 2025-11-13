@@ -224,9 +224,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👤 Author
 
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
+**Raúl Jiménez Barco**
+- GitHub: [@Veregorn](https://github.com/Veregorn)
+- LinkedIn: [rjbarco](https://linkedin.com/in/rjbarco)
 
 ## 🙏 Acknowledgments
 
