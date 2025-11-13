@@ -1,5 +1,6 @@
 # 📈 Multi-Stock Price Alert App
 
+[![CI](https://github.com/Veregorn/stock-price-alert-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Veregorn/stock-price-alert-app/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
