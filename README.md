@@ -1,6 +1,7 @@
 # 📈 Multi-Stock Price Alert App
 
 [![CI](https://github.com/Veregorn/stock-price-alert-app/actions/workflows/ci.yml/badge.svg)](https://github.com/Veregorn/stock-price-alert-app/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Veregorn/stock-price-alert-app/branch/main/graph/badge.svg)](https://codecov.io/gh/Veregorn/stock-price-alert-app)
 [![Python Version](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -161,12 +162,18 @@ STOCKS_CSV_FILE = "stocks.csv"  # Path to your stocks configuration
 stock-price-sms-alert-app/
 ├── main.py              # Main application with logging
 ├── stocks.csv           # Stock configuration
+├── tests/               # Unit tests directory
+│   ├── __init__.py
+│   └── test_main.py     # Tests for main functions
 ├── logs/                # Log files directory (auto-created)
 │   └── stock_monitor_YYYYMMDD.log
 ├── .env                 # Environment variables (not in git)
 ├── .env.example         # Example environment file
 ├── .gitignore           # Git ignore rules
+├── pytest.ini           # Pytest configuration
+├── .coveragerc          # Coverage configuration
 ├── requirements.txt     # Python dependencies
+├── requirements-dev.txt # Development dependencies
 └── README.md           # This file
 ```
 
@@ -237,6 +244,55 @@ tail -f logs/stock_monitor_$(date +%Y%m%d).log
 - `ERROR`: API failures, timeouts
 - `CRITICAL`: Fatal errors
 
+## 🧪 Testing
+
+The project includes comprehensive unit tests to ensure code quality and reliability.
+
+### Running Tests
+
+**Install development dependencies first:**
+```bash
+pip install -r requirements-dev.txt
+```
+
+**Run all tests:**
+```bash
+pytest
+```
+
+**Run with coverage report:**
+```bash
+pytest --cov=. --cov-report=html
+```
+
+**Run specific test file:**
+```bash
+pytest tests/test_main.py -v
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ CSV stock loading and validation
+- ✅ Stock price data fetching and percentage calculation
+- ✅ News article retrieval
+- ✅ Report generation with various scenarios
+- ✅ WhatsApp/SMS notification sending
+- ✅ Error handling and edge cases
+
+View detailed coverage report:
+```bash
+pytest --cov=. --cov-report=html
+open htmlcov/index.html  # Opens coverage report in browser
+```
+
+### Continuous Integration
+
+All tests run automatically on every push and pull request via GitHub Actions. The CI pipeline includes:
+- Code linting with flake8
+- Unit tests with pytest
+- Coverage reporting to Codecov
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here are some ideas:
@@ -246,7 +302,7 @@ Contributions are welcome! Here are some ideas:
 - [ ] Create a web dashboard
 - [ ] Add historical price tracking with SQLite
 - [ ] Generate price charts with matplotlib
-- [ ] Add unit tests and CI/CD
+- [x] Add unit tests and CI/CD
 
 ## ⚠️ Disclaimer
 
