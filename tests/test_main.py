@@ -286,6 +286,10 @@ class TestSendAlertMessage:
     """Tests for send_alert_message function"""
 
     @patch('main.Client')
+    @patch('main.TWILIO_ACCOUNT_SID', 'test_sid')
+    @patch('main.TWILIO_AUTH_TOKEN', 'test_token')
+    @patch('main.TWILIO_PHONE_NUMBER', '+1234567890')
+    @patch('main.MY_PHONE_NUMBER', '+0987654321')
     def test_send_alert_message_whatsapp_success(self, mock_client_class):
         """Test successful WhatsApp message sending"""
         # Mock Twilio client
@@ -303,6 +307,10 @@ class TestSendAlertMessage:
         mock_client.messages.create.assert_called_once()
 
     @patch('main.Client')
+    @patch('main.TWILIO_ACCOUNT_SID', 'test_sid')
+    @patch('main.TWILIO_AUTH_TOKEN', 'test_token')
+    @patch('main.TWILIO_PHONE_NUMBER', '+1234567890')
+    @patch('main.MY_PHONE_NUMBER', '+0987654321')
     def test_send_alert_message_sms_success(self, mock_client_class):
         """Test successful SMS message sending"""
         mock_client = MagicMock()
@@ -323,6 +331,8 @@ class TestSendAlertMessage:
             assert result is False
 
     @patch('main.Client')
+    @patch('main.TWILIO_ACCOUNT_SID', 'test_sid')
+    @patch('main.TWILIO_AUTH_TOKEN', 'test_token')
     def test_send_alert_message_error(self, mock_client_class):
         """Test handling of Twilio errors"""
         mock_client_class.side_effect = Exception("Twilio error")
