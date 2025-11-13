@@ -15,6 +15,7 @@ A professional Python application that monitors multiple stock prices and sends 
 - 🎯 **Consolidated Reports**: Receive a summary message plus detailed alerts for each stock
 - ⚡ **Rate Limiting**: Built-in delays to respect API rate limits
 - 🛡️ **Error Handling**: Robust error handling - one failed stock doesn't stop the entire monitoring
+- 📝 **Professional Logging**: Rotating log files with detailed debugging information and console output
 
 ## 🎬 Demo
 
@@ -157,8 +158,10 @@ STOCKS_CSV_FILE = "stocks.csv"  # Path to your stocks configuration
 
 ```
 stock-price-sms-alert-app/
-├── main.py              # Main application
+├── main.py              # Main application with logging
 ├── stocks.csv           # Stock configuration
+├── logs/                # Log files directory (auto-created)
+│   └── stock_monitor_YYYYMMDD.log
 ├── .env                 # Environment variables (not in git)
 ├── .env.example         # Example environment file
 ├── .gitignore           # Git ignore rules
@@ -202,6 +205,36 @@ In `main.py`, you can customize:
 - Number of news articles per stock (default: 3)
 - Delay between API calls (default: 1 second)
 - Message format and content
+
+### Viewing Logs
+
+The application maintains detailed logs for debugging and monitoring:
+
+**Log Files Location**: `logs/stock_monitor_YYYYMMDD.log`
+
+**Log Features**:
+- Automatic daily rotation
+- Maximum 10MB per file
+- Keeps last 5 backup files
+- Detailed timestamps and function names
+- Full error stack traces
+
+**View today's logs**:
+```bash
+cat logs/stock_monitor_$(date +%Y%m%d).log
+```
+
+**Tail logs in real-time**:
+```bash
+tail -f logs/stock_monitor_$(date +%Y%m%d).log
+```
+
+**Log Levels**:
+- `DEBUG`: API requests and technical details
+- `INFO`: Normal operations (stocks loaded, prices fetched)
+- `WARNING`: Alerts triggered, missing credentials
+- `ERROR`: API failures, timeouts
+- `CRITICAL`: Fatal errors
 
 ## 🤝 Contributing
 
