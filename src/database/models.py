@@ -83,8 +83,9 @@ class PriceHistory(Base):
 
     def __repr__(self):
         """Representación legible del objeto PriceHistory."""
+        change_str = f"{self.percentage_change:+.2f}%" if self.percentage_change is not None else "N/A"
         return (f"<PriceHistory(stock_id={self.stock_id}, date={self.date.date()}, "
-                f"price=${self.close_price:.2f}, change={self.percentage_change:+.2f}%)>")
+                f"price=${self.close_price:.2f}, change={change_str})>")
 
 
 class Alert(Base):
