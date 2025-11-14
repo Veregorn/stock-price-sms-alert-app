@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config import config
+from .routers import stocks
 
 # Crear la aplicación FastAPI
 app = FastAPI(
@@ -37,6 +38,15 @@ app.add_middleware(
     allow_methods=["*"],  # Permitir todos los métodos (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Permitir todos los headers
 )
+
+
+# ============================================================================
+# REGISTRAR ROUTERS
+# ============================================================================
+# Los routers organizan endpoints relacionados en grupos lógicos
+# El prefijo /api se añade a todos los routers
+
+app.include_router(stocks.router, prefix="/api")
 
 
 # ============================================================================
