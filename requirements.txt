@@ -2,3 +2,9 @@ requests==2.31.0
 python-dotenv==0.21.0
 twilio==9.0.5
 sqlalchemy==2.0.23
+
+# API Dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+httpx==0.25.1  # Para TestClient de FastAPI
