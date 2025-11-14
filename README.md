@@ -18,6 +18,9 @@ A professional Python application that monitors multiple stock prices and sends 
 - ⚡ **Rate Limiting**: Built-in delays to respect API rate limits
 - 🛡️ **Error Handling**: Robust error handling - one failed stock doesn't stop the entire monitoring
 - 📝 **Professional Logging**: Rotating log files with detailed debugging information and console output
+- 🏗️ **Modular Architecture**: Clean, maintainable codebase with separation of concerns
+- 🧪 **Comprehensive Tests**: 98% code coverage with 43 unit and integration tests
+- 🔄 **CI/CD Pipeline**: Automated testing, linting, and coverage reporting via GitHub Actions
 
 ## 🎬 Demo
 
@@ -117,11 +120,18 @@ A professional Python application that monitors multiple stock prices and sends 
 | `company_name` | Full company name (for news search) | `Tesla Inc` |
 | `threshold` | Alert threshold percentage | `5` (means ≥5% change) |
 
-### Application Settings (`main.py`)
+### Application Settings (`src/config.py`)
 
 ```python
+# Notification preferences
 USE_WHATSAPP = True  # Set to False for SMS instead of WhatsApp
+
+# File paths
 STOCKS_CSV_FILE = "stocks.csv"  # Path to your stocks configuration
+
+# API timeouts and delays
+API_TIMEOUT = 10  # Seconds
+REQUEST_DELAY = 1  # Seconds between API calls
 ```
 
 ## 🔑 API Setup Guide
@@ -160,22 +170,54 @@ STOCKS_CSV_FILE = "stocks.csv"  # Path to your stocks configuration
 
 ```
 stock-price-sms-alert-app/
-├── main.py              # Main application with logging
-├── stocks.csv           # Stock configuration
-├── tests/               # Unit tests directory
+├── main.py                    # Main application entry point
+├── src/                       # Source code package
+│   ├── __init__.py            # Package initialization
+│   ├── config.py              # Centralized configuration management
+│   ├── stock_fetcher.py       # Stock data fetching from Alpha Vantage
+│   ├── news_fetcher.py        # News retrieval from News API
+│   ├── notifier.py            # WhatsApp/SMS notifications via Twilio
+│   └── utils.py               # Utility functions (CSV, logging, reports)
+├── tests/                     # Comprehensive test suite (98% coverage)
 │   ├── __init__.py
-│   └── test_main.py     # Tests for main functions
-├── logs/                # Log files directory (auto-created)
+│   ├── test_main.py           # Integration tests
+│   ├── test_stock_fetcher.py  # Stock fetcher unit tests
+│   ├── test_news_fetcher.py   # News fetcher unit tests
+│   ├── test_notifier.py       # Notifier unit tests
+│   └── test_utils.py          # Utils unit tests
+├── logs/                      # Log files directory (auto-created)
 │   └── stock_monitor_YYYYMMDD.log
-├── .env                 # Environment variables (not in git)
-├── .env.example         # Example environment file
-├── .gitignore           # Git ignore rules
-├── pytest.ini           # Pytest configuration
-├── .coveragerc          # Coverage configuration
-├── requirements.txt     # Python dependencies
-├── requirements-dev.txt # Development dependencies
-└── README.md           # This file
+├── stocks.csv                 # Stock configuration
+├── .env                       # Environment variables (not in git)
+├── .env.example               # Example environment file
+├── .gitignore                 # Git ignore rules
+├── pytest.ini                 # Pytest configuration
+├── .coveragerc                # Coverage configuration
+├── .github/                   # GitHub Actions workflows
+│   └── workflows/
+│       └── ci.yml             # CI/CD pipeline
+├── requirements.txt           # Python dependencies
+├── requirements-dev.txt       # Development dependencies
+├── LICENSE                    # MIT License
+└── README.md                  # This file
 ```
+
+### Architecture Highlights
+
+The application follows **clean architecture principles** with clear separation of concerns:
+
+- **`main.py`**: Orchestrates the application flow, coordinates between modules
+- **`src/config.py`**: Single source of truth for all configuration (API keys, settings)
+- **`src/stock_fetcher.py`**: Encapsulates all stock price API interactions
+- **`src/news_fetcher.py`**: Handles news article retrieval
+- **`src/notifier.py`**: Manages messaging through Twilio with lazy client initialization
+- **`src/utils.py`**: Provides reusable utilities (CSV parsing, logging, report formatting)
+
+This modular design makes the codebase:
+- **Maintainable**: Each module has a single, well-defined responsibility
+- **Testable**: Modules can be tested independently (43 unit tests, 98% coverage)
+- **Extensible**: Easy to add new features or swap implementations
+- **Professional**: Industry-standard structure suitable for portfolios and production use
 
 ## 🛠️ Built With
 
@@ -209,10 +251,12 @@ AMD,Advanced Micro Devices Inc,6
 
 ### Adjusting Notification Preferences
 
-In `main.py`, you can customize:
-- Number of news articles per stock (default: 3)
-- Delay between API calls (default: 1 second)
-- Message format and content
+In `src/config.py`, you can customize:
+- `USE_WHATSAPP`: Toggle between WhatsApp and SMS
+- `API_TIMEOUT`: Request timeout in seconds
+- `REQUEST_DELAY`: Delay between API calls (default: 1 second)
+- `LOG_DIR`: Location for log files
+- Number of news articles per stock (in `src/news_fetcher.py`, default: 3)
 
 ### Viewing Logs
 
@@ -246,7 +290,20 @@ tail -f logs/stock_monitor_$(date +%Y%m%d).log
 
 ## 🧪 Testing
 
-The project includes comprehensive unit tests to ensure code quality and reliability.
+The project includes a comprehensive test suite with **98% code coverage** to ensure reliability and maintainability.
+
+### Test Structure
+
+```
+tests/
+├── test_main.py           # 7 integration tests - main application flow
+├── test_stock_fetcher.py  # 8 unit tests - stock data fetching
+├── test_news_fetcher.py   # 10 unit tests - news retrieval
+├── test_notifier.py       # 10 unit tests - notifications
+└── test_utils.py          # 8 unit tests - utilities
+```
+
+**Total: 43 tests** covering all core functionality.
 
 ### Running Tests
 
@@ -260,49 +317,98 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
+**Run with verbose output:**
+```bash
+pytest -v
+```
+
 **Run with coverage report:**
 ```bash
-pytest --cov=. --cov-report=html
+pytest --cov=src --cov=main --cov-report=html
 ```
 
 **Run specific test file:**
 ```bash
-pytest tests/test_main.py -v
+pytest tests/test_stock_fetcher.py -v
+```
+
+**Run specific test class:**
+```bash
+pytest tests/test_notifier.py::TestNotifier -v
 ```
 
 ### Test Coverage
 
-The test suite covers:
-- ✅ CSV stock loading and validation
-- ✅ Stock price data fetching and percentage calculation
-- ✅ News article retrieval
-- ✅ Report generation with various scenarios
-- ✅ WhatsApp/SMS notification sending
-- ✅ Error handling and edge cases
+The test suite achieves **98% coverage** and includes:
+
+- ✅ **Config Management**: Environment variable loading and defaults
+- ✅ **Stock Fetcher**:
+  - API interactions with Alpha Vantage
+  - Percentage change calculations (positive/negative)
+  - Error handling (timeouts, API errors, invalid responses)
+- ✅ **News Fetcher**:
+  - Article retrieval from News API
+  - Query parameter validation
+  - Error handling and edge cases
+- ✅ **Notifier**:
+  - WhatsApp and SMS message sending
+  - Lazy client initialization
+  - Credential validation
+  - Twilio exception handling
+- ✅ **Utils**:
+  - CSV stock loading and validation
+  - Report generation with various scenarios
+  - Logging configuration
+- ✅ **Integration**:
+  - Complete application workflow
+  - Multiple stock processing
+  - Alert triggering logic
+  - Error recovery
 
 View detailed coverage report:
 ```bash
-pytest --cov=. --cov-report=html
+pytest --cov=src --cov=main --cov-report=html
 open htmlcov/index.html  # Opens coverage report in browser
 ```
 
 ### Continuous Integration
 
 All tests run automatically on every push and pull request via GitHub Actions. The CI pipeline includes:
-- Code linting with flake8
-- Unit tests with pytest
-- Coverage reporting to Codecov
+- **Code Linting**: flake8 for code style enforcement
+- **Unit Tests**: Full test suite with pytest
+- **Coverage Reporting**: Automatic upload to Codecov
+- **Multi-Python Support**: Tests run on Python 3.7+
+
+Check the CI status badge at the top of this README!
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here are some ideas:
+Contributions are welcome! Here are some ideas for future enhancements:
 
 - [ ] Add support for cryptocurrency monitoring
 - [ ] Implement email notifications
 - [ ] Create a web dashboard
 - [ ] Add historical price tracking with SQLite
 - [ ] Generate price charts with matplotlib
-- [x] Add unit tests and CI/CD
+- [x] Add unit tests and CI/CD ✅
+- [x] Modularize codebase with clean architecture ✅
+- [x] Achieve high test coverage (98%) ✅
+
+### Development Setup
+
+1. Fork and clone the repository
+2. Install dependencies: `pip install -r requirements-dev.txt`
+3. Create a feature branch: `git checkout -b feature/amazing-feature`
+4. Make your changes and add tests
+5. Run tests: `pytest --cov=src --cov=main`
+6. Ensure linting passes: `flake8 .`
+7. Commit and push: `git commit -m "Add amazing feature"`
+8. Create a Pull Request
+
+All PRs must:
+- Include tests for new functionality
+- Maintain or improve code coverage
+- Pass all CI checks (tests, linting, coverage)
 
 ## ⚠️ Disclaimer
 
