@@ -29,6 +29,10 @@ class Config:
     STOCKS_CSV_FILE = "stocks.csv"
     LOG_DIR = "logs"
 
+    # Database Settings
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///stock_monitor.db")
+    DATABASE_ECHO = False  # Set to True for SQL query debugging
+
     # API Endpoints
     ALPHA_VANTAGE_ENDPOINT = "https://www.alphavantage.co/query"
     NEWS_API_ENDPOINT = "https://newsapi.org/v2/everything"
