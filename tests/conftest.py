@@ -4,7 +4,7 @@ Configuración de fixtures de pytest para todos los tests.
 Este módulo contiene fixtures compartidas que pueden ser utilizadas
 por todos los tests del proyecto. Las fixtures proporcionan:
 - Cliente de prueba de FastAPI
-- Base de datos de prueba
+- Base de datos de prueba (SQLite en memoria, limpia para cada test)
 - Datos de ejemplo (stocks, precios, etc.)
 """
 
@@ -14,32 +14,87 @@ from fastapi.testclient import TestClient
 
 from src.api.main import app
 from src.database import DatabaseService
+from src.database.models import Base
+from src.api.dependencies import get_db
 
 
 # =============================================================================
 # FIXTURES DE INFRAESTRUCTURA
 # =============================================================================
 
-@pytest.fixture
-def client():
+@pytest.fixture(scope="function")
+def test_db():
     """
-    Cliente de prueba de FastAPI.
+    Base de datos de prueba temporal (SQLite).
 
-    Proporciona un TestClient configurado para hacer peticiones HTTP
-    a la API sin necesidad de levantar un servidor real.
+    Crea una BD temporal limpia para cada test. Se elimina
+    automáticamente al finalizar el test.
+
+    Scope: function - Nueva BD para cada test (aislamiento total)
     """
-    return TestClient(app)
+    import tempfile
+    import os
+
+    # Crear archivo temporal para BD
+    fd, db_path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+
+    # Crear BD con check_same_thread=False para TestClient
+    db = DatabaseService(
+        database_url=f"sqlite:///{db_path}?check_same_thread=False"
+    )
+
+    # Crear todas las tablas
+    Base.metadata.create_all(bind=db.engine)
+
+    yield db
+
+    # Cleanup: cerrar conexiones
+    db.engine.dispose()
+
+    # Eliminar archivo temporal
+    try:
+        os.unlink(db_path)
+    except Exception:
+        pass  # Si ya se eliminó, no hay problema
 
 
-@pytest.fixture
-def db():
+@pytest.fixture(scope="function")
+def client(test_db):
     """
-    Servicio de base de datos para tests.
+    Cliente de prueba de FastAPI con BD de test.
+
+    Proporciona un TestClient configurado que usa la BD de test
+    en lugar de la BD de producción.
+
+    Scope: function - Nuevo cliente para cada test
+    """
+    # Override de la dependencia get_db para usar test_db
+    def override_get_db():
+        return test_db
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    # Crear cliente
+    test_client = TestClient(app)
+
+    yield test_client
+
+    # Cleanup: restaurar dependencia original
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def db(test_db):
+    """
+    Alias para test_db, para compatibilidad con tests existentes.
 
     Proporciona una instancia de DatabaseService que puede ser
     usada para setup de datos o verificación de estado.
+
+    Scope: function - Nueva BD para cada test
     """
-    return DatabaseService()
+    return test_db
 
 
 # =============================================================================
@@ -91,15 +146,12 @@ def multiple_stocks(db):
 
     stocks = []
     for symbol, name, threshold, is_active in stocks_data:
-        stock = db.get_stock_by_symbol(symbol)
-        if not stock:
-            stock = db.create_stock(
-                symbol=symbol,
-                company_name=name,
-                threshold=threshold
-            )
-            if not is_active:
-                db.toggle_stock_active(symbol)
+        stock = db.create_stock(
+            symbol=symbol,
+            company_name=name,
+            threshold=threshold,
+            is_active=is_active
+        )
         stocks.append(stock)
 
     return stocks

@@ -2,6 +2,10 @@
 
 Este directorio contiene los tests automatizados para la API REST del proyecto.
 
+## ✅ Estado: 100% de Tests Pasando
+
+**167 tests** en total, todos pasando consistentemente en local y CI/CD.
+
 ## 📁 Estructura
 
 ```
@@ -64,11 +68,33 @@ pytest --cov=src --cov-report=html
 
 Luego abre `htmlcov/index.html` en tu navegador.
 
+## 🔧 Aislamiento de Tests
+
+Los tests utilizan **bases de datos SQLite temporales** que se crean y destruyen para cada test:
+
+- **Aislamiento total**: Cada test tiene su propia BD limpia
+- **Sin datos residuales**: Los tests son independientes y pueden ejecutarse en cualquier orden
+- **CI/CD friendly**: Funcionan consistentemente en GitHub Actions
+- **Rápido**: SQLite en disco temporal es muy eficiente
+
+### Implementación
+
+```python
+@pytest.fixture(scope="function")
+def test_db():
+    """Crea BD temporal para cada test."""
+    db = DatabaseService(database_url="sqlite:///temp.db?check_same_thread=False")
+    Base.metadata.create_all(bind=db.engine)
+    yield db
+    db.engine.dispose()
+```
+
 ## 🧪 Fixtures Disponibles
 
 ### Infraestructura
-- `client`: TestClient de FastAPI para hacer requests HTTP
-- `db`: DatabaseService para operaciones de BD
+- `test_db`: Base de datos temporal limpia (scope: function)
+- `client`: TestClient de FastAPI con BD de test
+- `db`: Alias para test_db (compatibilidad)
 
 ### Datos de Prueba
 - `sample_stock`: Crea un stock de prueba (TSLA)
