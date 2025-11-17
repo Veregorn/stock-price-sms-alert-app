@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Stock Price Alert{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">Dashboard</h2>
+
+    <!-- Estadísticas generales -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8" id="stats-container">
+        <!-- Stats se cargarán dinámicamente -->
+        <div class="animate-pulse">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div class="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas recientes -->
+    <div class="bg-white shadow rounded-lg mb-8">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-bell text-yellow-500 mr-2"></i>
+                    Alertas Recientes
+                </h3>
+                <a href="/alerts" class="text-sm text-indigo-600 hover:text-indigo-500">
+                    Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div id="alerts-container">
+                <!-- Alertas se cargarán dinámicamente -->
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Cargando alertas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stocks activos -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-layer-group text-blue-500 mr-2"></i>
+                    Stocks Monitoreados
+                </h3>
+                <a href="/stocks" class="text-sm text-indigo-600 hover:text-indigo-500">
+                    Gestionar <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div id="stocks-container">
+                <!-- Stocks se cargarán dinámicamente -->
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Cargando stocks...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Cargar estadísticas del dashboard
+    async function loadDashboardStats() {
+        try {
+            const data = await apiRequest('/dashboard/stats');
+
+            const statsHtml = `
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-layer-group text-blue-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Stocks</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${data.total_stocks}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-play-circle text-green-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Stocks Activos</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${data.active_stocks}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-chart-line text-purple-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Precios</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${data.total_prices}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-bell text-yellow-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Alertas (30 días)</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${data.total_alerts}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('stats-container').innerHTML = statsHtml;
+        } catch (error) {
+            document.getElementById('stats-container').innerHTML = `
+                <div class="col-span-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error al cargar estadísticas
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Cargar alertas recientes
+    async function loadRecentAlerts() {
+        try {
+            const data = await apiRequest('/alerts?days=7');
+
+            if (data.alerts.length === 0) {
+                document.getElementById('alerts-container').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No hay alertas recientes</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const alertsHtml = data.alerts.slice(0, 5).map(alert => {
+                const changeClass = alert.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
+                const icon = alert.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+
+                return `
+                    <div class="border-l-4 ${alert.percentage_change >= 0 ? 'border-green-500' : 'border-red-500'} bg-gray-50 p-4 mb-3 rounded fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold text-gray-900">${alert.symbol}</p>
+                                <p class="text-sm text-gray-600">${formatDate(alert.created_at)}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="${changeClass} font-bold">
+                                    <i class="fas ${icon}"></i>
+                                    ${formatPercentage(alert.percentage_change)}
+                                </p>
+                                <p class="text-sm text-gray-600">${formatCurrency(alert.current_price)}</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-2">${alert.message}</p>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('alerts-container').innerHTML = alertsHtml;
+        } catch (error) {
+            document.getElementById('alerts-container').innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error al cargar alertas
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Cargar stocks activos
+    async function loadActiveStocks() {
+        try {
+            const data = await apiRequest('/stocks?active_only=true');
+
+            if (data.stocks.length === 0) {
+                document.getElementById('stocks-container').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No hay stocks monitoreados activos</p>
+                        <a href="/stocks" class="mt-4 inline-block text-indigo-600 hover:text-indigo-500">
+                            Añadir stocks <i class="fas fa-plus ml-1"></i>
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            const stocksHtml = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umbral</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${data.stocks.map(stock => `
+                                <tr class="hover:bg-gray-50 fade-in">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div>
+                                            <div class="font-semibold text-gray-900">${stock.symbol}</div>
+                                            <div class="text-sm text-gray-500">${stock.company_name}</div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        ${stock.threshold}%
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="badge-success">
+                                            <i class="fas fa-check-circle mr-1"></i> Activo
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <a href="/stocks/${stock.symbol}/prices" class="text-indigo-600 hover:text-indigo-900">
+                                            <i class="fas fa-chart-line mr-1"></i> Ver precios
+                                        </a>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('stocks-container').innerHTML = stocksHtml;
+        } catch (error) {
+            document.getElementById('stocks-container').innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error al cargar stocks
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Cargar todos los datos al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboardStats();
+        loadRecentAlerts();
+        loadActiveStocks();
+    });
+</script>
+{% endblock %}
