@@ -356,3 +356,150 @@ class PriceHistoryListResponse(BaseModel):
             }
         }
     )
+
+
+# =============================================================================
+# SCHEMAS PARA ALERTS
+# =============================================================================
+
+class AlertResponse(BaseModel):
+    """
+    Schema de respuesta para una alerta.
+
+    Usado en: respuestas de GET para alertas
+    """
+    id: int = Field(
+        ...,
+        description="ID único de la alerta"
+    )
+    stock_id: int = Field(
+        ...,
+        description="ID del stock que disparó la alerta"
+    )
+    percentage_change: float = Field(
+        ...,
+        description="Cambio porcentual que disparó la alerta"
+    )
+    threshold_at_time: float = Field(
+        ...,
+        description="Umbral configurado en el momento de la alerta"
+    )
+    price_before: Optional[float] = Field(
+        None,
+        description="Precio anterior"
+    )
+    price_after: Optional[float] = Field(
+        None,
+        description="Precio nuevo que disparó la alerta"
+    )
+    message_sent: bool = Field(
+        ...,
+        description="Si se envió la notificación exitosamente"
+    )
+    notification_type: Optional[str] = Field(
+        None,
+        description="Tipo de notificación enviada (whatsapp, sms)"
+    )
+    error_message: Optional[str] = Field(
+        None,
+        description="Mensaje de error si falló el envío"
+    )
+    triggered_at: datetime = Field(
+        ...,
+        description="Fecha y hora en que se disparó la alerta"
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "stock_id": 1,
+                "percentage_change": 6.5,
+                "threshold_at_time": 5.0,
+                "price_before": 250.00,
+                "price_after": 266.25,
+                "message_sent": True,
+                "notification_type": "whatsapp",
+                "error_message": None,
+                "triggered_at": "2024-01-15T10:30:00"
+            }
+        }
+    )
+
+
+class AlertListResponse(BaseModel):
+    """
+    Schema para respuesta con lista de alertas.
+
+    Usado en: GET /api/alerts
+    """
+    total: int = Field(
+        ...,
+        description="Número total de alertas"
+    )
+    alerts: list[AlertResponse] = Field(
+        ...,
+        description="Lista de alertas"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "total": 5,
+                "alerts": [
+                    {
+                        "id": 1,
+                        "stock_id": 1,
+                        "percentage_change": 6.5,
+                        "threshold_at_time": 5.0,
+                        "price_before": 250.00,
+                        "price_after": 266.25,
+                        "message_sent": True,
+                        "notification_type": "whatsapp",
+                        "error_message": None,
+                        "triggered_at": "2024-01-15T10:30:00"
+                    }
+                ]
+            }
+        }
+    )
+
+
+# =============================================================================
+# SCHEMAS PARA DASHBOARD
+# =============================================================================
+
+class DashboardSummaryResponse(BaseModel):
+    """
+    Schema para el resumen del dashboard.
+
+    Contiene estadísticas generales del sistema.
+    """
+    total_stocks: int = Field(
+        ...,
+        description="Número total de stocks configurados"
+    )
+    active_stocks: int = Field(
+        ...,
+        description="Número de stocks activos"
+    )
+    recent_alerts_24h: int = Field(
+        ...,
+        description="Alertas generadas en las últimas 24 horas"
+    )
+    last_price_update: Optional[datetime] = Field(
+        None,
+        description="Fecha de la última actualización de precios"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "total_stocks": 8,
+                "active_stocks": 7,
+                "recent_alerts_24h": 3,
+                "last_price_update": "2024-01-15T14:30:00"
+            }
+        }
+    )

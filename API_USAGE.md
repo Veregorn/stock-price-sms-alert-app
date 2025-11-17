@@ -95,6 +95,24 @@ Una vez que la API esté corriendo, puedes acceder a:
   - Calcula automáticamente `previous_close` y `percentage_change`
   - Retorna 201 si se añade exitosamente
 
+### 📊 Dashboard (Estadísticas y Resumen)
+
+- **GET** `/api/dashboard/summary`
+  - Obtiene resumen general del sistema
+  - Retorna: total de stocks, stocks activos, alertas 24h, última actualización
+
+### 🚨 Alerts (Alertas Generadas)
+
+- **GET** `/api/alerts`
+  - Lista alertas recientes del sistema
+  - Query params: `days=7` (número de días hacia atrás, default: 7, máx: 365)
+  - Retorna lista ordenada por fecha (más reciente primero)
+
+- **GET** `/api/alerts/{stock_symbol}`
+  - Obtiene alertas de un stock específico
+  - Query params: `days=30` (default: 30, máx: 365)
+  - Retorna 404 si el stock no existe
+
 ## 🧪 Probar la API
 
 ### Usando cURL
@@ -143,6 +161,20 @@ curl http://localhost:8000/api/stocks/TSLA/prices/latest
 curl -X POST http://localhost:8000/api/stocks/TSLA/prices \
   -H "Content-Type: application/json" \
   -d '{"date":"2024-01-15T00:00:00","close_price":250.75}'
+
+# === DASHBOARD & ALERTS ===
+
+# Obtener resumen del dashboard
+curl http://localhost:8000/api/dashboard/summary
+
+# Listar alertas recientes (últimos 7 días)
+curl http://localhost:8000/api/alerts
+
+# Listar alertas de los últimos 30 días
+curl http://localhost:8000/api/alerts?days=30
+
+# Obtener alertas de un stock específico
+curl http://localhost:8000/api/alerts/TSLA
 ```
 
 ### Usando Python requests
@@ -208,6 +240,28 @@ new_price = {
 }
 response = requests.post(f"{BASE_URL}/api/stocks/TSLA/prices", json=new_price)
 print(response.json())
+
+# === DASHBOARD & ALERTS ===
+
+# Obtener resumen del dashboard
+response = requests.get(f"{BASE_URL}/api/dashboard/summary")
+summary = response.json()
+print(f"Stocks activos: {summary['active_stocks']}/{summary['total_stocks']}")
+print(f"Alertas 24h: {summary['recent_alerts_24h']}")
+
+# Listar alertas recientes
+response = requests.get(f"{BASE_URL}/api/alerts")
+alerts = response.json()
+print(f"Alertas (últimos 7 días): {alerts['total']}")
+
+# Alertas con días personalizados
+response = requests.get(f"{BASE_URL}/api/alerts", params={"days": 30})
+alerts_30d = response.json()
+
+# Alertas de un stock específico
+response = requests.get(f"{BASE_URL}/api/alerts/TSLA")
+tsla_alerts = response.json()
+print(f"Alertas de TSLA: {tsla_alerts['total']}")
 ```
 
 ## 🔧 Configuración
@@ -228,6 +282,4 @@ La API utiliza las siguientes configuraciones desde `src/config.py`:
 
 En las siguientes fases se añadirán:
 
-- `/api/alerts` - Alertas generadas
-- `/api/dashboard` - Estadísticas y resumen
-- `/api/news` - Noticias relacionadas
+- `/api/news` - Noticias relacionadas con stocks
