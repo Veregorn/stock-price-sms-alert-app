@@ -231,3 +231,128 @@ class ErrorResponse(BaseModel):
             }
         }
     )
+
+
+# =============================================================================
+# SCHEMAS PARA PRICE HISTORY
+# =============================================================================
+
+class PriceHistoryBase(BaseModel):
+    """
+    Schema base para PriceHistory.
+
+    Contiene los campos comunes del histórico de precios.
+    """
+    date: datetime = Field(
+        ...,
+        description="Fecha del precio"
+    )
+    close_price: float = Field(
+        ...,
+        gt=0,
+        description="Precio de cierre (debe ser > 0)"
+    )
+    previous_close: Optional[float] = Field(
+        None,
+        gt=0,
+        description="Precio de cierre anterior"
+    )
+    percentage_change: Optional[float] = Field(
+        None,
+        description="Cambio porcentual respecto al precio anterior"
+    )
+
+
+class PriceHistoryCreate(BaseModel):
+    """
+    Schema para crear un registro de precio.
+
+    Usado en: POST /api/stocks/{symbol}/prices
+    Solo requiere date y close_price, el resto se calcula automáticamente.
+    """
+    date: datetime = Field(
+        ...,
+        description="Fecha del precio"
+    )
+    close_price: float = Field(
+        ...,
+        gt=0,
+        description="Precio de cierre (debe ser > 0)",
+        examples=[250.75]
+    )
+
+
+class PriceHistoryResponse(PriceHistoryBase):
+    """
+    Schema de respuesta para un registro de precio.
+
+    Usado en: respuestas de GET y POST
+    Incluye campos adicionales generados por la BD.
+    """
+    id: int = Field(
+        ...,
+        description="ID único del registro"
+    )
+    stock_id: int = Field(
+        ...,
+        description="ID del stock al que pertenece"
+    )
+    created_at: datetime = Field(
+        ...,
+        description="Fecha de creación del registro"
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "stock_id": 1,
+                "date": "2024-01-15T00:00:00",
+                "close_price": 250.75,
+                "previous_close": 245.50,
+                "percentage_change": 2.14,
+                "created_at": "2024-01-15T10:30:00"
+            }
+        }
+    )
+
+
+class PriceHistoryListResponse(BaseModel):
+    """
+    Schema para respuesta con lista de precios históricos.
+
+    Usado en: GET /api/stocks/{symbol}/prices
+    """
+    symbol: str = Field(
+        ...,
+        description="Símbolo del stock"
+    )
+    total: int = Field(
+        ...,
+        description="Número total de registros"
+    )
+    prices: list[PriceHistoryResponse] = Field(
+        ...,
+        description="Lista de precios históricos"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "symbol": "TSLA",
+                "total": 30,
+                "prices": [
+                    {
+                        "id": 1,
+                        "stock_id": 1,
+                        "date": "2024-01-15T00:00:00",
+                        "close_price": 250.75,
+                        "previous_close": 245.50,
+                        "percentage_change": 2.14,
+                        "created_at": "2024-01-15T10:30:00"
+                    }
+                ]
+            }
+        }
+    )

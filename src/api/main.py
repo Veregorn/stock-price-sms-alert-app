@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config import config
-from .routers import stocks
+from .routers import stocks, prices
 
 # Crear la aplicación FastAPI
 app = FastAPI(
@@ -47,6 +47,7 @@ app.add_middleware(
 # El prefijo /api se añade a todos los routers
 
 app.include_router(stocks.router, prefix="/api")
+app.include_router(prices.router, prefix="/api")
 
 
 # ============================================================================

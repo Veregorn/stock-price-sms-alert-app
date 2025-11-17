@@ -78,6 +78,23 @@ Una vez que la API esté corriendo, puedes acceder a:
   - Elimina un stock y todos sus datos relacionados
   - Retorna 404 si no existe
 
+### 📈 Price History (Histórico de Precios)
+
+- **GET** `/api/stocks/{symbol}/prices`
+  - Obtiene el histórico de precios de un stock
+  - Query params: `days=30` (número de días hacia atrás, default: 30, máx: 365)
+  - Retorna lista ordenada por fecha (más reciente primero)
+
+- **GET** `/api/stocks/{symbol}/prices/latest`
+  - Obtiene el último precio registrado de un stock
+  - Retorna 404 si no existe o no tiene precios
+
+- **POST** `/api/stocks/{symbol}/prices`
+  - Añade un precio manualmente (útil para testing/simulación)
+  - Body: `{"date": "2024-01-15T00:00:00", "close_price": 250.75}`
+  - Calcula automáticamente `previous_close` y `percentage_change`
+  - Retorna 201 si se añade exitosamente
+
 ## 🧪 Probar la API
 
 ### Usando cURL
@@ -110,6 +127,22 @@ curl -X PATCH http://localhost:8000/api/stocks/NVDA/toggle
 
 # Eliminar stock
 curl -X DELETE http://localhost:8000/api/stocks/NVDA
+
+# === PRICE HISTORY ===
+
+# Obtener histórico de precios (últimos 30 días)
+curl http://localhost:8000/api/stocks/TSLA/prices
+
+# Obtener histórico de precios (últimos 7 días)
+curl http://localhost:8000/api/stocks/TSLA/prices?days=7
+
+# Obtener último precio
+curl http://localhost:8000/api/stocks/TSLA/prices/latest
+
+# Añadir precio manualmente
+curl -X POST http://localhost:8000/api/stocks/TSLA/prices \
+  -H "Content-Type: application/json" \
+  -d '{"date":"2024-01-15T00:00:00","close_price":250.75}'
 ```
 
 ### Usando Python requests
@@ -150,6 +183,31 @@ print(response.json())
 # Eliminar stock
 response = requests.delete(f"{BASE_URL}/api/stocks/NVDA")
 print(response.json())
+
+# === PRICE HISTORY ===
+
+# Obtener histórico de precios
+response = requests.get(f"{BASE_URL}/api/stocks/TSLA/prices")
+data = response.json()
+print(f"Total precios: {data['total']}")
+
+# Obtener histórico con días personalizados
+response = requests.get(f"{BASE_URL}/api/stocks/TSLA/prices", params={"days": 7})
+prices = response.json()
+
+# Obtener último precio
+response = requests.get(f"{BASE_URL}/api/stocks/TSLA/prices/latest")
+latest_price = response.json()
+print(f"Último precio: ${latest_price['close_price']:.2f}")
+
+# Añadir precio manualmente
+from datetime import datetime
+new_price = {
+    "date": datetime.now().isoformat(),
+    "close_price": 250.75
+}
+response = requests.post(f"{BASE_URL}/api/stocks/TSLA/prices", json=new_price)
+print(response.json())
 ```
 
 ## 🔧 Configuración
@@ -170,7 +228,6 @@ La API utiliza las siguientes configuraciones desde `src/config.py`:
 
 En las siguientes fases se añadirán:
 
-- `/api/prices` - Histórico de precios
 - `/api/alerts` - Alertas generadas
 - `/api/dashboard` - Estadísticas y resumen
 - `/api/news` - Noticias relacionadas
