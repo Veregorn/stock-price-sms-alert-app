@@ -6,9 +6,9 @@
 <div class="px-4 sm:px-0">
     <h2 class="text-3xl font-bold text-gray-900 mb-6">Dashboard</h2>
 
-    <!-- Estadísticas generales -->
+    <!-- General statistics -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8" id="stats-container">
-        <!-- Stats se cargarán dinámicamente -->
+        <!-- Stats will load dynamically -->
         <div class="animate-pulse">
             <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="p-5">
@@ -19,45 +19,45 @@
         </div>
     </div>
 
-    <!-- Alertas recientes -->
+    <!-- Recent alerts -->
     <div class="bg-white shadow rounded-lg mb-8">
         <div class="px-4 py-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900">
                     <i class="fas fa-bell text-yellow-500 mr-2"></i>
-                    Alertas Recientes
+                    Recent Alerts
                 </h3>
                 <a href="/alerts" class="text-sm text-indigo-600 hover:text-indigo-500">
-                    Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                    View all <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
             <div id="alerts-container">
-                <!-- Alertas se cargarán dinámicamente -->
+                <!-- Alerts will load dynamically -->
                 <div class="text-center py-8 text-gray-500">
                     <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <p>Cargando alertas...</p>
+                    <p>Loading alerts...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Stocks activos -->
+    <!-- Active stocks -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900">
                     <i class="fas fa-layer-group text-blue-500 mr-2"></i>
-                    Stocks Monitoreados
+                    Monitored Stocks
                 </h3>
                 <a href="/stocks" class="text-sm text-indigo-600 hover:text-indigo-500">
-                    Gestionar <i class="fas fa-arrow-right ml-1"></i>
+                    Manage <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
             <div id="stocks-container">
-                <!-- Stocks se cargarán dinámicamente -->
+                <!-- Stocks will load dynamically -->
                 <div class="text-center py-8 text-gray-500">
                     <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <p>Cargando stocks...</p>
+                    <p>Loading stocks...</p>
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
 
 {% block extra_scripts %}
 <script>
-    // Cargar estadísticas del dashboard
+    // Load dashboard statistics
     async function loadDashboardStats() {
         try {
             const data = await apiRequest('/dashboard/stats');
@@ -97,7 +97,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Stocks Activos</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Active Stocks</dt>
                                     <dd class="text-3xl font-semibold text-gray-900">${data.active_stocks}</dd>
                                 </dl>
                             </div>
@@ -113,7 +113,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Precios</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Prices</dt>
                                     <dd class="text-3xl font-semibold text-gray-900">${data.total_prices}</dd>
                                 </dl>
                             </div>
@@ -129,7 +129,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Alertas (30 días)</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Alerts (30 days)</dt>
                                     <dd class="text-3xl font-semibold text-gray-900">${data.total_alerts}</dd>
                                 </dl>
                             </div>
@@ -144,14 +144,14 @@
                 <div class="col-span-4 bg-red-50 border border-red-200 rounded-lg p-4">
                     <p class="text-red-800 text-center">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        Error al cargar estadísticas
+                        Error loading statistics
                     </p>
                 </div>
             `;
         }
     }
 
-    // Cargar alertas recientes
+    // Load recent alerts
     async function loadRecentAlerts() {
         try {
             const data = await apiRequest('/alerts?days=7');
@@ -160,13 +160,13 @@
                 document.getElementById('alerts-container').innerHTML = `
                     <div class="text-center py-8 text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-2"></i>
-                        <p>No hay alertas recientes en los últimos 7 días</p>
+                        <p>No recent alerts in the last 7 days</p>
                     </div>
                 `;
                 return;
             }
 
-            // Necesitamos obtener los símbolos de los stocks
+            // We need to get stock symbols
             const stocksData = await apiRequest('/stocks');
             const stocksMap = {};
             stocksData.stocks.forEach(stock => {
@@ -174,16 +174,16 @@
             });
 
             const alertsHtml = data.alerts.slice(0, 5).map(alert => {
-                // Validar que tenemos todos los datos necesarios
+                // Validate that we have all necessary data
                 if (!alert.percentage_change || !alert.price_after || !alert.stock_id) {
-                    return ''; // Skip alertas incompletas
+                    return ''; // Skip incomplete alerts
                 }
 
                 const symbol = stocksMap[alert.stock_id] || 'UNKNOWN';
                 const changeClass = alert.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
                 const icon = alert.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-                const direction = alert.percentage_change >= 0 ? 'subido' : 'bajado';
-                const message = `${symbol} ha ${direction} un ${formatPercentage(alert.percentage_change)} (umbral: ${alert.threshold_at_time}%)`;
+                const direction = alert.percentage_change >= 0 ? 'increased' : 'decreased';
+                const message = `${symbol} has ${direction} by ${formatPercentage(alert.percentage_change)} (threshold: ${alert.threshold_at_time}%)`;
 
                 return `
                     <div class="border-l-4 ${alert.percentage_change >= 0 ? 'border-green-500' : 'border-red-500'} bg-gray-50 p-4 mb-3 rounded fade-in">
@@ -205,12 +205,12 @@
                 `;
             }).filter(html => html !== '').join('');
 
-            // Si después de filtrar no quedan alertas válidas
+            // If after filtering there are no valid alerts
             if (alertsHtml === '') {
                 document.getElementById('alerts-container').innerHTML = `
                     <div class="text-center py-8 text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-2"></i>
-                        <p>No hay alertas válidas para mostrar</p>
+                        <p>No valid alerts to display</p>
                     </div>
                 `;
                 return;
@@ -222,14 +222,14 @@
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                     <p class="text-red-800 text-center">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        Error al cargar alertas
+                        Error loading alerts
                     </p>
                 </div>
             `;
         }
     }
 
-    // Cargar stocks activos
+    // Load active stocks
     async function loadActiveStocks() {
         try {
             const data = await apiRequest('/stocks?active_only=true');
@@ -238,9 +238,9 @@
                 document.getElementById('stocks-container').innerHTML = `
                     <div class="text-center py-8 text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-2"></i>
-                        <p>No hay stocks monitoreados activos</p>
+                        <p>No active monitored stocks</p>
                         <a href="/stocks" class="mt-4 inline-block text-indigo-600 hover:text-indigo-500">
-                            Añadir stocks <i class="fas fa-plus ml-1"></i>
+                            Add stocks <i class="fas fa-plus ml-1"></i>
                         </a>
                     </div>
                 `;
@@ -253,9 +253,9 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Umbral</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Threshold</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -272,12 +272,12 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="badge-success">
-                                            <i class="fas fa-check-circle mr-1"></i> Activo
+                                            <i class="fas fa-check-circle mr-1"></i> Active
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                                         <a href="/stocks/${stock.symbol}/prices" class="text-indigo-600 hover:text-indigo-900">
-                                            <i class="fas fa-chart-line mr-1"></i> Ver precios
+                                            <i class="fas fa-chart-line mr-1"></i> View prices
                                         </a>
                                     </td>
                                 </tr>
@@ -293,14 +293,14 @@
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                     <p class="text-red-800 text-center">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        Error al cargar stocks
+                        Error loading stocks
                     </p>
                 </div>
             `;
         }
     }
 
-    // Cargar todos los datos al cargar la página
+    // Load all data on page load
     document.addEventListener('DOMContentLoaded', () => {
         loadDashboardStats();
         loadRecentAlerts();
