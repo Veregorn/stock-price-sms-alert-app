@@ -237,10 +237,7 @@ class TestPriceHistoryIntegration:
         assert history["total"] == 2
 
         # 4. Obtener último precio
-        latest_response = client.get("/api/stocks/TSLA/prices/latest")
-        assert latest_response.status_code == 200
-        latest = latest_response.json()
-        assert "close_price" in latest
+        latest = client.get("/api/stocks/TSLA/prices/latest").json()
         assert latest["close_price"] == 110.0
 
     def test_price_history_with_filters(self, client, sample_stock):

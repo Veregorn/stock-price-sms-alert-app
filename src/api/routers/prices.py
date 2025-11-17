@@ -133,8 +133,9 @@ async def get_latest_price(
             detail=f"Stock con símbolo '{symbol.upper()}' no encontrado"
         )
 
-    # Obtener último precio (solo 1 día hacia atrás pero más reciente)
-    prices = db.get_price_history(symbol, days=1)
+    # Obtener último precio (buscar en todos los registros, no limitar por días)
+    # Usamos un rango amplio para asegurar que encontramos el más reciente
+    prices = db.get_price_history(symbol, days=365)
 
     if not prices:
         raise HTTPException(
