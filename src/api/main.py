@@ -19,6 +19,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 
+# Crear directorios si no existen
+TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
 # Crear la aplicación FastAPI
 app = FastAPI(
     title="Stock Price Alert API",
