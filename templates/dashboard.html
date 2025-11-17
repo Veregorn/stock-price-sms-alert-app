@@ -156,39 +156,65 @@
         try {
             const data = await apiRequest('/alerts?days=7');
 
-            if (data.alerts.length === 0) {
+            if (!data || !data.alerts || data.alerts.length === 0) {
                 document.getElementById('alerts-container').innerHTML = `
                     <div class="text-center py-8 text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-2"></i>
-                        <p>No hay alertas recientes</p>
+                        <p>No hay alertas recientes en los últimos 7 días</p>
                     </div>
                 `;
                 return;
             }
 
+            // Necesitamos obtener los símbolos de los stocks
+            const stocksData = await apiRequest('/stocks');
+            const stocksMap = {};
+            stocksData.stocks.forEach(stock => {
+                stocksMap[stock.id] = stock.symbol;
+            });
+
             const alertsHtml = data.alerts.slice(0, 5).map(alert => {
+                // Validar que tenemos todos los datos necesarios
+                if (!alert.percentage_change || !alert.price_after || !alert.stock_id) {
+                    return ''; // Skip alertas incompletas
+                }
+
+                const symbol = stocksMap[alert.stock_id] || 'UNKNOWN';
                 const changeClass = alert.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
                 const icon = alert.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                const direction = alert.percentage_change >= 0 ? 'subido' : 'bajado';
+                const message = `${symbol} ha ${direction} un ${formatPercentage(alert.percentage_change)} (umbral: ${alert.threshold_at_time}%)`;
 
                 return `
                     <div class="border-l-4 ${alert.percentage_change >= 0 ? 'border-green-500' : 'border-red-500'} bg-gray-50 p-4 mb-3 rounded fade-in">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="font-semibold text-gray-900">${alert.symbol}</p>
-                                <p class="text-sm text-gray-600">${formatDate(alert.created_at)}</p>
+                                <p class="font-semibold text-gray-900">${symbol}</p>
+                                <p class="text-sm text-gray-600">${formatDate(alert.triggered_at)}</p>
                             </div>
                             <div class="text-right">
                                 <p class="${changeClass} font-bold">
                                     <i class="fas ${icon}"></i>
                                     ${formatPercentage(alert.percentage_change)}
                                 </p>
-                                <p class="text-sm text-gray-600">${formatCurrency(alert.current_price)}</p>
+                                <p class="text-sm text-gray-600">${formatCurrency(alert.price_after)}</p>
                             </div>
                         </div>
-                        <p class="text-sm text-gray-700 mt-2">${alert.message}</p>
+                        <p class="text-sm text-gray-700 mt-2">${message}</p>
                     </div>
                 `;
-            }).join('');
+            }).filter(html => html !== '').join('');
+
+            // Si después de filtrar no quedan alertas válidas
+            if (alertsHtml === '') {
+                document.getElementById('alerts-container').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No hay alertas válidas para mostrar</p>
+                    </div>
+                `;
+                return;
+            }
 
             document.getElementById('alerts-container').innerHTML = alertsHtml;
         } catch (error) {
