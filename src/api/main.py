@@ -5,11 +5,19 @@ Este módulo configura y crea la aplicación FastAPI con todas sus
 configuraciones: CORS, middleware, rutas, etc.
 """
 
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from ..config import config
-from .routers import stocks, prices, dashboard, alerts, news
+from .routers import stocks, prices, dashboard, alerts, news, pages
+
+# Configurar rutas de templates y archivos estáticos
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+TEMPLATES_DIR = BASE_DIR / "templates"
+STATIC_DIR = BASE_DIR / "static"
 
 # Crear la aplicación FastAPI
 app = FastAPI(
@@ -19,6 +27,12 @@ app = FastAPI(
     docs_url="/api/docs",  # Swagger UI
     redoc_url="/api/redoc",  # ReDoc
 )
+
+# Configurar templates Jinja2
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+# Montar archivos estáticos
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # ============================================================================
 # CONFIGURACIÓN DE CORS
@@ -44,13 +58,18 @@ app.add_middleware(
 # REGISTRAR ROUTERS
 # ============================================================================
 # Los routers organizan endpoints relacionados en grupos lógicos
-# El prefijo /api se añade a todos los routers
+# El prefijo /api se añade a todos los routers de API
+# Las páginas HTML se sirven sin prefijo
 
+# Routers de API REST
 app.include_router(stocks.router, prefix="/api")
 app.include_router(prices.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(alerts.router, prefix="/api")
 app.include_router(news.router, prefix="/api")
+
+# Router de páginas HTML (sin prefijo)
+app.include_router(pages.router)
 
 
 # ============================================================================

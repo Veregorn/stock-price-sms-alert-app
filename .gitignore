@@ -58,3 +58,7 @@ coverage.xml
 data/*.db
 data/*.sqlite
 *.csv.backup
+
+# IA
+CLAUDE.md
+.claude/*
