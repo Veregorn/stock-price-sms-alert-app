@@ -503,3 +503,127 @@ class DashboardSummaryResponse(BaseModel):
             }
         }
     )
+
+
+# =============================================================================
+# SCHEMAS PARA NEWS ARTICLES
+# =============================================================================
+
+class NewsArticleCreate(BaseModel):
+    """
+    Schema para guardar una noticia.
+
+    Usado en: POST /api/stocks/{symbol}/news
+    """
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=500,
+        description="Título de la noticia",
+        examples=["Tesla anuncia nuevo modelo eléctrico"]
+    )
+    description: Optional[str] = Field(
+        None,
+        max_length=2000,
+        description="Descripción o resumen de la noticia"
+    )
+    url: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="URL de la noticia original"
+    )
+    published_at: Optional[datetime] = Field(
+        None,
+        description="Fecha de publicación de la noticia"
+    )
+
+
+class NewsArticleResponse(BaseModel):
+    """
+    Schema de respuesta para una noticia.
+
+    Usado en: respuestas de GET y POST
+    """
+    id: int = Field(
+        ...,
+        description="ID único de la noticia"
+    )
+    stock_id: int = Field(
+        ...,
+        description="ID del stock relacionado"
+    )
+    title: str = Field(
+        ...,
+        description="Título de la noticia"
+    )
+    description: Optional[str] = Field(
+        None,
+        description="Descripción o resumen"
+    )
+    url: Optional[str] = Field(
+        None,
+        description="URL de la noticia"
+    )
+    published_at: Optional[datetime] = Field(
+        None,
+        description="Fecha de publicación"
+    )
+    fetched_at: datetime = Field(
+        ...,
+        description="Fecha en que se guardó la noticia"
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "stock_id": 1,
+                "title": "Tesla anuncia nuevo modelo eléctrico",
+                "description": "La compañía ha revelado detalles sobre su próximo vehículo...",
+                "url": "https://example.com/tesla-news",
+                "published_at": "2024-01-15T10:00:00",
+                "fetched_at": "2024-01-15T10:30:00"
+            }
+        }
+    )
+
+
+class NewsArticleListResponse(BaseModel):
+    """
+    Schema para respuesta con lista de noticias.
+
+    Usado en: GET /api/stocks/{symbol}/news
+    """
+    symbol: str = Field(
+        ...,
+        description="Símbolo del stock"
+    )
+    total: int = Field(
+        ...,
+        description="Número total de noticias"
+    )
+    news: list[NewsArticleResponse] = Field(
+        ...,
+        description="Lista de noticias"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "symbol": "TSLA",
+                "total": 5,
+                "news": [
+                    {
+                        "id": 1,
+                        "stock_id": 1,
+                        "title": "Tesla anuncia nuevo modelo eléctrico",
+                        "description": "La compañía ha revelado detalles...",
+                        "url": "https://example.com/tesla-news",
+                        "published_at": "2024-01-15T10:00:00",
+                        "fetched_at": "2024-01-15T10:30:00"
+                    }
+                ]
+            }
+        }
+    )

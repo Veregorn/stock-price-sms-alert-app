@@ -113,6 +113,22 @@ Una vez que la API esté corriendo, puedes acceder a:
   - Query params: `days=30` (default: 30, máx: 365)
   - Retorna 404 si el stock no existe
 
+### 📰 News (Noticias)
+
+- **GET** `/api/stocks/{symbol}/news`
+  - Obtiene las noticias archivadas de un stock
+  - Query params: `limit=10` (número máximo de noticias, default: 10, máx: 100)
+  - Retorna lista ordenada por fecha de obtención (más reciente primero)
+  - Retorna 404 si el stock no existe
+
+- **POST** `/api/stocks/{symbol}/news`
+  - Guarda una noticia relacionada con un stock manualmente
+  - Body: `{"title": "...", "description": "...", "url": "...", "published_at": "..."}`
+  - Solo `title` es obligatorio, los demás campos son opcionales
+  - Útil para testing, integración manual o importación de datos históricos
+  - Retorna 201 si se guarda exitosamente
+  - Retorna 404 si el stock no existe
+
 ## 🧪 Probar la API
 
 ### Usando cURL
@@ -175,6 +191,29 @@ curl http://localhost:8000/api/alerts?days=30
 
 # Obtener alertas de un stock específico
 curl http://localhost:8000/api/alerts/TSLA
+
+# === NEWS (NOTICIAS) ===
+
+# Obtener noticias de un stock (últimas 10)
+curl http://localhost:8000/api/stocks/TSLA/news
+
+# Obtener noticias con límite personalizado
+curl http://localhost:8000/api/stocks/TSLA/news?limit=5
+
+# Guardar una noticia manualmente
+curl -X POST http://localhost:8000/api/stocks/TSLA/news \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Tesla anuncia nuevo modelo de vehículo eléctrico",
+    "description": "Tesla ha anunciado un nuevo modelo revolucionario.",
+    "url": "https://example.com/tesla-nuevo-modelo",
+    "published_at": "2024-01-15T10:30:00"
+  }'
+
+# Guardar noticia con datos mínimos (solo título)
+curl -X POST http://localhost:8000/api/stocks/TSLA/news \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Tesla actualiza su software"}'
 ```
 
 ### Usando Python requests
@@ -262,6 +301,35 @@ alerts_30d = response.json()
 response = requests.get(f"{BASE_URL}/api/alerts/TSLA")
 tsla_alerts = response.json()
 print(f"Alertas de TSLA: {tsla_alerts['total']}")
+
+# === NEWS (NOTICIAS) ===
+
+# Obtener noticias de un stock
+response = requests.get(f"{BASE_URL}/api/stocks/TSLA/news")
+data = response.json()
+print(f"Noticias de TSLA: {data['total']}")
+
+# Obtener noticias con límite personalizado
+response = requests.get(f"{BASE_URL}/api/stocks/TSLA/news", params={"limit": 5})
+news = response.json()
+
+# Guardar una noticia completa
+news_data = {
+    "title": "Tesla anuncia nuevo modelo de vehículo eléctrico",
+    "description": "Tesla ha anunciado un nuevo modelo revolucionario que promete cambiar el mercado.",
+    "url": "https://example.com/tesla-nuevo-modelo",
+    "published_at": "2024-01-15T10:30:00"
+}
+response = requests.post(f"{BASE_URL}/api/stocks/TSLA/news", json=news_data)
+print(response.json())
+
+# Guardar noticia con datos mínimos
+minimal_news = {
+    "title": "Tesla actualiza su software de conducción autónoma"
+}
+response = requests.post(f"{BASE_URL}/api/stocks/TSLA/news", json=minimal_news)
+saved_news = response.json()
+print(f"Noticia guardada con ID: {saved_news['id']}")
 ```
 
 ## 🔧 Configuración
@@ -278,8 +346,20 @@ La API utiliza las siguientes configuraciones desde `src/config.py`:
   - API: `8000`
   - Frontend (futuro): `3000`
 
-## 🔜 Próximos Endpoints
+## 🎉 Estado Actual
 
-En las siguientes fases se añadirán:
+Todos los endpoints de la API REST están implementados y funcionando:
 
-- `/api/news` - Noticias relacionadas con stocks
+- ✅ Health Check y Root
+- ✅ Stocks (CRUD completo)
+- ✅ Price History (histórico de precios)
+- ✅ Dashboard (estadísticas)
+- ✅ Alerts (alertas generadas)
+- ✅ News (noticias archivadas)
+
+## 🔜 Próximas Fases
+
+- **PHASE 2.6**: Tests formales con pytest
+- **PHASE 3**: Frontend con Tailwind CSS
+- **PHASE 4**: Integración y Scheduler
+- **PHASE 5**: Documentación y Deployment

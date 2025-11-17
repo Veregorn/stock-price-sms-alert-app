@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config import config
-from .routers import stocks, prices, dashboard, alerts
+from .routers import stocks, prices, dashboard, alerts, news
 
 # Crear la aplicación FastAPI
 app = FastAPI(
@@ -50,6 +50,7 @@ app.include_router(stocks.router, prefix="/api")
 app.include_router(prices.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(alerts.router, prefix="/api")
+app.include_router(news.router, prefix="/api")
 
 
 # ============================================================================
