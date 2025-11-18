@@ -51,6 +51,8 @@ Una vez que la API esté corriendo, puedes acceder a:
 
 ### 📊 Stocks (CRUD Completo)
 
+#### Gestión de Stocks
+
 - **GET** `/api/stocks`
   - Lista todos los stocks
   - Query params: `only_active=true` para filtrar solo activos
@@ -115,10 +117,13 @@ Una vez que la API esté corriendo, puedes acceder a:
 
 ### 📰 News (Noticias)
 
+#### Consulta de Noticias
+
 - **GET** `/api/stocks/{symbol}/news`
   - Obtiene las noticias archivadas de un stock
   - Query params: `limit=10` (número máximo de noticias, default: 10, máx: 100)
   - Retorna lista ordenada por fecha de obtención (más reciente primero)
+  - Incluye imágenes y atribución de fotógrafos (Unsplash)
   - Retorna 404 si el stock no existe
 
 - **POST** `/api/stocks/{symbol}/news`
@@ -128,6 +133,64 @@ Una vez que la API esté corriendo, puedes acceder a:
   - Útil para testing, integración manual o importación de datos históricos
   - Retorna 201 si se guarda exitosamente
   - Retorna 404 si el stock no existe
+
+#### Actualización Automática de Noticias (News API)
+
+- **POST** `/api/stocks/{symbol}/update-news`
+  - Obtiene noticias de News API y las guarda en la base de datos
+  - Query params: `limit=5` (número de artículos a obtener, default: 5, máx: 20)
+  - Busca noticias por el nombre de la compañía
+  - Detecta duplicados por URL para evitar repeticiones
+  - Usa imágenes de Unsplash como fallback si News API no tiene imagen
+  - Guarda atribución del fotógrafo (requerido por Unsplash API Guidelines)
+  - Retorna resumen con total de artículos obtenidos y guardados
+  - Retorna 404 si el stock no existe
+  - Retorna 503 si hay error con News API
+
+- **POST** `/api/stocks/update-all-news`
+  - Actualiza noticias para TODOS los stocks activos
+  - Query params: `limit=5` (artículos por stock, default: 5, máx: 20)
+  - Útil para actualización batch o scheduled jobs
+  - Retorna resumen con total de stocks actualizados y artículos guardados
+  - **Nota**: Ten en cuenta los límites de rate de News API
+
+### 📈 Stock Updates (Actualización de Precios)
+
+#### Actualización Automática de Precios (Alpha Vantage)
+
+- **POST** `/api/stocks/{symbol}/update-price`
+  - Obtiene el precio actual de Alpha Vantage y lo guarda
+  - Calcula el cambio porcentual automáticamente
+  - Crea alerta automáticamente si se supera el umbral
+  - Previene alertas duplicadas para el mismo día
+  - Retorna información del precio guardado y alerta (si aplica)
+  - Retorna 404 si el stock no existe
+  - Retorna 503 si hay error con Alpha Vantage API
+
+- **POST** `/api/stocks/update-all-prices`
+  - Actualiza precios para TODOS los stocks activos
+  - Crea alertas automáticamente cuando se superan umbrales
+  - Previene alertas duplicadas
+  - Retorna resumen con total de stocks actualizados y alertas creadas
+  - **Nota**: Ten en cuenta el límite de 25 requests/día de Alpha Vantage
+
+### 📱 Notifications (Notificaciones WhatsApp/SMS)
+
+- **POST** `/api/alerts/{alert_id}/send`
+  - Envía notificación WhatsApp/SMS para una alerta específica
+  - Query params: `use_whatsapp=true` (true para WhatsApp, false para SMS)
+  - Formatea mensaje con información del stock y cambio de precio
+  - Actualiza estado de la alerta en la base de datos
+  - Retorna confirmación con detalles del envío
+  - Retorna 404 si la alerta no existe
+  - Retorna 503 si Twilio no está configurado o hay error
+
+- **POST** `/api/alerts/send-pending`
+  - Envía notificaciones para TODAS las alertas pendientes (message_sent=False)
+  - Query params: `use_whatsapp=true` (true para WhatsApp, false para SMS)
+  - Útil para procesar alertas acumuladas
+  - Retorna resumen con total enviado y fallidos
+  - **Nota**: Ten en cuenta los límites de Twilio API
 
 ## 🧪 Probar la API
 
@@ -214,6 +277,33 @@ curl -X POST http://localhost:8000/api/stocks/TSLA/news \
 curl -X POST http://localhost:8000/api/stocks/TSLA/news \
   -H "Content-Type: application/json" \
   -d '{"title": "Tesla actualiza su software"}'
+
+# === STOCK UPDATES (ALPHA VANTAGE) ===
+
+# Actualizar precio de un stock desde Alpha Vantage
+curl -X POST http://localhost:8000/api/stocks/AAPL/update-price
+
+# Actualizar precios de todos los stocks activos
+curl -X POST http://localhost:8000/api/stocks/update-all-prices
+
+# === NEWS UPDATES (NEWS API) ===
+
+# Obtener y guardar noticias de un stock
+curl -X POST "http://localhost:8000/api/stocks/AAPL/update-news?limit=5"
+
+# Actualizar noticias de todos los stocks activos
+curl -X POST "http://localhost:8000/api/stocks/update-all-news?limit=3"
+
+# === NOTIFICATIONS (TWILIO) ===
+
+# Enviar notificación WhatsApp para una alerta específica
+curl -X POST "http://localhost:8000/api/alerts/1/send?use_whatsapp=true"
+
+# Enviar notificación SMS para una alerta específica
+curl -X POST "http://localhost:8000/api/alerts/1/send?use_whatsapp=false"
+
+# Enviar notificaciones para todas las alertas pendientes
+curl -X POST "http://localhost:8000/api/alerts/send-pending?use_whatsapp=true"
 ```
 
 ### Usando Python requests
@@ -330,6 +420,47 @@ minimal_news = {
 response = requests.post(f"{BASE_URL}/api/stocks/TSLA/news", json=minimal_news)
 saved_news = response.json()
 print(f"Noticia guardada con ID: {saved_news['id']}")
+
+# === STOCK UPDATES (ALPHA VANTAGE) ===
+
+# Actualizar precio de un stock
+response = requests.post(f"{BASE_URL}/api/stocks/AAPL/update-price")
+data = response.json()
+print(f"Precio actualizado: ${data['price']['close_price']:.2f}")
+if data['alert_triggered']:
+    print(f"¡ALERTA! Cambio de {data['price']['percentage_change']:.2f}%")
+
+# Actualizar todos los stocks
+response = requests.post(f"{BASE_URL}/api/stocks/update-all-prices")
+summary = response.json()
+print(f"Actualizados: {summary['updated']} stocks")
+print(f"Alertas creadas: {summary['alerts_created']}")
+
+# === NEWS UPDATES (NEWS API) ===
+
+# Obtener noticias de un stock
+response = requests.post(f"{BASE_URL}/api/stocks/AAPL/update-news", params={"limit": 5})
+result = response.json()
+print(f"Noticias guardadas: {result['total_saved']}/{result['total_fetched']}")
+
+# Actualizar noticias de todos los stocks
+response = requests.post(f"{BASE_URL}/api/stocks/update-all-news", params={"limit": 3})
+summary = response.json()
+print(f"Total artículos guardados: {summary['total_articles_saved']}")
+
+# === NOTIFICATIONS (TWILIO) ===
+
+# Enviar notificación WhatsApp para una alerta
+response = requests.post(f"{BASE_URL}/api/alerts/1/send", params={"use_whatsapp": True})
+result = response.json()
+if result['sent']:
+    print(f"Notificación enviada vía {result['notification_type']}")
+
+# Enviar todas las notificaciones pendientes
+response = requests.post(f"{BASE_URL}/api/alerts/send-pending", params={"use_whatsapp": True})
+summary = response.json()
+print(f"Enviadas: {summary['sent']}/{summary['total_pending']}")
+print(f"Fallidas: {summary['failed']}")
 ```
 
 ## 🔧 Configuración
@@ -356,10 +487,38 @@ Todos los endpoints de la API REST están implementados y funcionando:
 - ✅ Dashboard (estadísticas)
 - ✅ Alerts (alertas generadas)
 - ✅ News (noticias archivadas)
+- ✅ Stock Updates (Alpha Vantage integration)
+- ✅ News Updates (News API + Unsplash integration)
+- ✅ Notifications (Twilio WhatsApp/SMS)
 
-## 🔜 Próximas Fases
+## 🔮 Funcionalidades Completas
 
-- **PHASE 2.6**: Tests formales con pytest
-- **PHASE 3**: Frontend con Tailwind CSS
-- **PHASE 4**: Integración y Scheduler
-- **PHASE 5**: Documentación y Deployment
+### Fase 1: Backend Core ✅
+- Base de datos con SQLAlchemy
+- Modelos y relaciones
+- Service layer (Repository pattern)
+- Configuración centralizada
+
+### Fase 2: REST API ✅
+- FastAPI con documentación automática
+- CRUD completo de stocks
+- Endpoints de precios y alertas
+- Endpoints de noticias
+- Dashboard con estadísticas
+
+### Fase 3: Frontend Web ✅
+- Interfaz responsive con Tailwind CSS
+- Dashboard interactivo
+- Gestión de stocks (CRUD)
+- Gráficos de precios con Chart.js
+- Navegador de noticias con imágenes
+- Filtrado y visualización de alertas
+
+### Fase 4: Integraciones Externas ✅
+- ✅ Alpha Vantage API (precios en tiempo real)
+- ✅ News API (noticias financieras)
+- ✅ Unsplash API (imágenes fallback)
+- ✅ Twilio (notificaciones WhatsApp/SMS)
+- ✅ Detección de duplicados
+- ✅ Rate limiting awareness
+- ✅ Error handling robusto

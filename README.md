@@ -13,10 +13,12 @@ A modern, full-stack web application for monitoring multiple stock prices with r
 
 ### 🎯 Core Functionality
 - **📊 Multi-Stock Monitoring**: Track unlimited stocks with customizable alert thresholds
-- **🚨 Smart Alerts**: Percentage-based alerts with historical tracking and notifications
-- **📱 WhatsApp/SMS Notifications**: Receive instant alerts via Twilio (Phase 4)
-- **📰 News Integration**: Browse latest news articles with images and source attribution
-- **📈 Interactive Price Charts**: Visual 30-day price trends with Chart.js
+- **🚨 Smart Alerts**: Percentage-based alerts with historical tracking and duplicate prevention
+- **📱 WhatsApp/SMS Notifications**: Receive instant alerts via Twilio with delivery status tracking
+- **📰 News Integration**: Automatic news fetching from News API with Unsplash fallback images
+- **📈 Real-Time Price Updates**: Fetch live stock prices from Alpha Vantage API
+- **🖼️ Professional Images**: Beautiful stock images from Unsplash API with proper attribution
+- **📊 Interactive Price Charts**: Visual 30-day price trends with Chart.js
 - **💾 Persistent Storage**: SQLite database for stocks, prices, alerts, and news
 
 ### 🖥️ Web Interface
@@ -57,9 +59,10 @@ Visit the application at `http://localhost:8000` after starting the server.
 ### Prerequisites
 
 - Python 3.7 or higher
-- Twilio account (free tier available) - *For Phase 4*
-- Alpha Vantage API key (free) - *For Phase 4*
-- News API key (free) - *For Phase 4*
+- Twilio account (free tier available) - **Required for WhatsApp/SMS notifications**
+- Alpha Vantage API key (free) - **Required for real-time stock prices**
+- News API key (free) - **Required for news articles**
+- Unsplash Access Key (free) - **Required for fallback images**
 
 ### Installation
 
@@ -83,20 +86,23 @@ Visit the application at `http://localhost:8000` after starting the server.
 
    Edit `.env` with your API keys:
    ```env
-   # Stock Price API (Alpha Vantage) - Required for Phase 4
+   # Stock Price API (Alpha Vantage) - Required
    ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
 
-   # News API - Required for Phase 4
+   # News API - Required
    NEWS_API_KEY=your_news_api_key
 
-   # Twilio (WhatsApp/SMS) - Required for Phase 4
+   # Unsplash API - Required for fallback images
+   UNSPLASH_ACCESS_KEY=your_unsplash_access_key
+
+   # Twilio (WhatsApp/SMS) - Required
    TWILIO_ACCOUNT_SID=your_twilio_sid
    TWILIO_AUTH_TOKEN=your_twilio_token
-   TWILIO_PHONE_NUMBER=+1234567890
-   MY_PHONE_NUMBER=+1234567890
+   TWILIO_PHONE_NUMBER=+14155238886  # Twilio WhatsApp Sandbox number
+   MY_PHONE_NUMBER=+1234567890  # Your phone number with country code
 
    # Database Configuration
-   DATABASE_URL=sqlite:///./stocks.db
+   DATABASE_URL=sqlite:///./stock_monitor.db
    DATABASE_ECHO=False
    ```
 
@@ -183,6 +189,9 @@ stock-price-sms-alert-app/
 │   │   │   ├── alerts.py         # Alert management endpoints
 │   │   │   ├── news.py           # News article endpoints
 │   │   │   ├── dashboard.py      # Dashboard statistics endpoint
+│   │   │   ├── stock_updates.py  # Stock price update endpoints
+│   │   │   ├── news_updates.py   # News fetch and save endpoints
+│   │   │   ├── notifications.py  # WhatsApp/SMS notification endpoints
 │   │   │   └── pages.py          # HTML page routes
 │   │   └── schemas.py            # Pydantic models (validation)
 │   │
@@ -193,9 +202,10 @@ stock-price-sms-alert-app/
 │   │                             # All CRUD operations
 │   │
 │   ├── config.py                 # Centralized configuration
-│   ├── stock_fetcher.py          # Stock price fetching (Phase 4)
-│   ├── news_fetcher.py           # News fetching (Phase 4)
-│   ├── notifier.py               # WhatsApp/SMS notifications (Phase 4)
+│   ├── stock_fetcher.py          # Alpha Vantage API integration
+│   ├── news_fetcher.py           # News API integration
+│   ├── image_fetcher.py          # Unsplash API integration
+│   ├── notifier.py               # Twilio WhatsApp/SMS integration
 │   └── utils.py                  # Utility functions
 │
 ├── templates/                    # Jinja2 HTML templates
@@ -289,10 +299,14 @@ This design ensures:
 - `title` (VARCHAR): Article title
 - `description` (TEXT, nullable): Article summary
 - `url` (VARCHAR, nullable): Link to original article
-- `image_url` (VARCHAR, nullable): Article image URL
+- `image_url` (VARCHAR, nullable): Article/fallback image URL
 - `source` (VARCHAR, nullable): News source (e.g., Bloomberg)
 - `published_at` (DATETIME, nullable): Publication date
 - `fetched_at` (DATETIME): When article was saved
+- `photographer_name` (VARCHAR, nullable): Unsplash photographer name
+- `photographer_username` (VARCHAR, nullable): Unsplash username
+- `photographer_url` (VARCHAR, nullable): Unsplash profile URL
+- `unsplash_download_location` (VARCHAR, nullable): Download tracking URL
 
 ### Relationships
 
@@ -370,9 +384,10 @@ This design ensures:
 - **[Chart.js](https://www.chartjs.org/)** (4.x via CDN) - Interactive charts
 - **[Font Awesome](https://fontawesome.com/)** (6.x via CDN) - Icon library
 
-### External APIs (Phase 4)
+### External APIs
 - **[Alpha Vantage API](https://www.alphavantage.co/)** - Real-time stock prices
 - **[News API](https://newsapi.org/)** - Financial news aggregation
+- **[Unsplash API](https://unsplash.com/developers)** - High-quality stock images
 - **[Twilio](https://www.twilio.com/)** - SMS and WhatsApp messaging
 
 ### Development Tools
@@ -383,27 +398,36 @@ This design ensures:
 
 ## 🔑 API Setup Guide
 
-### 1. Alpha Vantage (Stock Prices) - *Phase 4*
+### 1. Alpha Vantage (Stock Prices)
 - Visit: https://www.alphavantage.co/support/#api-key
 - Free tier: 25 requests/day, 5 requests/minute
 - Copy your API key to `.env` → `ALPHA_VANTAGE_API_KEY`
 
-### 2. News API (News Articles) - *Phase 4*
+### 2. News API (News Articles)
 - Visit: https://newsapi.org/register
 - Free tier: 100 requests/day
 - Copy your API key to `.env` → `NEWS_API_KEY`
 
-### 3. Twilio (WhatsApp/SMS) - *Phase 4*
+### 3. Unsplash (Stock Images)
+- Visit: https://unsplash.com/developers
+- Create an app to get your Access Key
+- Free tier: 50 requests/hour
+- Copy your Access Key to `.env` → `UNSPLASH_ACCESS_KEY`
+- **Important**: The app triggers download events as required by Unsplash API Guidelines
+
+### 4. Twilio (WhatsApp/SMS)
 - Visit: https://www.twilio.com/try-twilio
 - Free trial includes credit for testing
 - **For WhatsApp**: Join the Twilio Sandbox
   1. Go to https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
-  2. Send the activation message from your WhatsApp to the Twilio number
+  2. Send the activation message from your WhatsApp to the Twilio number (e.g., `join finish-swimming`)
+  3. Wait for confirmation message from Twilio
+  4. **Important**: You need to re-join the sandbox if it expires after inactivity
 - Copy credentials to `.env`:
   - `TWILIO_ACCOUNT_SID`
   - `TWILIO_AUTH_TOKEN`
-  - `TWILIO_PHONE_NUMBER`
-  - `MY_PHONE_NUMBER`
+  - `TWILIO_PHONE_NUMBER` (Use sandbox number: +14155238886)
+  - `MY_PHONE_NUMBER` (Your phone with country code, e.g., +1234567890)
 
 ## ⚙️ Configuration
 
@@ -411,13 +435,14 @@ This design ensures:
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
-| `ALPHA_VANTAGE_API_KEY` | Alpha Vantage API key | Phase 4 | - |
-| `NEWS_API_KEY` | News API key | Phase 4 | - |
-| `TWILIO_ACCOUNT_SID` | Twilio Account SID | Phase 4 | - |
-| `TWILIO_AUTH_TOKEN` | Twilio Auth Token | Phase 4 | - |
-| `TWILIO_PHONE_NUMBER` | Twilio phone number | Phase 4 | - |
-| `MY_PHONE_NUMBER` | Your phone number | Phase 4 | - |
-| `DATABASE_URL` | Database connection string | No | `sqlite:///./stocks.db` |
+| `ALPHA_VANTAGE_API_KEY` | Alpha Vantage API key | Yes | - |
+| `NEWS_API_KEY` | News API key | Yes | - |
+| `UNSPLASH_ACCESS_KEY` | Unsplash Access Key | Yes | - |
+| `TWILIO_ACCOUNT_SID` | Twilio Account SID | Yes | - |
+| `TWILIO_AUTH_TOKEN` | Twilio Auth Token | Yes | - |
+| `TWILIO_PHONE_NUMBER` | Twilio phone number | Yes | - |
+| `MY_PHONE_NUMBER` | Your phone number | Yes | - |
+| `DATABASE_URL` | Database connection string | No | `sqlite:///stock_monitor.db` |
 | `DATABASE_ECHO` | Log SQL queries (True/False) | No | `False` |
 
 ### Application Settings (`src/config.py`)
@@ -523,21 +548,27 @@ Check the CI status badge at the top!
   - [x] Client-side JavaScript utilities
   - [x] Error handling and user feedback
 
-### 🚧 Current Phase
-
-- [ ] **Phase 4**: External Integrations
-  - [ ] Stock Price API integration (Alpha Vantage)
-    - [ ] Fetch real-time prices
-    - [ ] Update price history automatically
-    - [ ] Handle API rate limits
-  - [ ] News API integration
-    - [ ] Fetch real news articles
-    - [ ] Store with images and metadata
-    - [ ] Scheduled updates
-  - [ ] WhatsApp/SMS Notifications (Twilio)
-    - [ ] Send alerts when thresholds exceeded
-    - [ ] Alert consolidation
-    - [ ] Delivery status tracking
+- [x] **Phase 4**: External Integrations ✅
+  - [x] Stock Price API integration (Alpha Vantage)
+    - [x] Fetch real-time prices with percentage changes
+    - [x] Update price history automatically
+    - [x] Automatic alert creation when thresholds exceeded
+    - [x] Duplicate alert prevention
+    - [x] Batch update all stocks endpoint
+  - [x] News API integration
+    - [x] Fetch real news articles by company name
+    - [x] Store with images and metadata
+    - [x] Duplicate detection by URL
+    - [x] Individual and batch fetch endpoints
+  - [x] Unsplash API integration
+    - [x] Fallback images when News API has no image
+    - [x] Photographer attribution (required by Unsplash)
+    - [x] Download event tracking
+  - [x] WhatsApp/SMS Notifications (Twilio)
+    - [x] Send alerts when thresholds exceeded
+    - [x] Delivery status tracking in database
+    - [x] Individual and batch notification endpoints
+    - [x] Error handling and logging
 
 ### 🔮 Future Enhancements
 
@@ -574,9 +605,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [FastAPI](https://fastapi.tiangolo.com/) for the incredible web framework
 - [Tailwind CSS](https://tailwindcss.com/) for beautiful, responsive styling
 - [Chart.js](https://www.chartjs.org/) for interactive data visualization
-- Alpha Vantage for providing free stock market data
-- News API for financial news aggregation
-- Twilio for messaging infrastructure
+- [Alpha Vantage](https://www.alphavantage.co/) for providing free stock market data
+- [News API](https://newsapi.org/) for financial news aggregation
+- [Unsplash](https://unsplash.com/) for beautiful, free stock images
+- [Twilio](https://www.twilio.com/) for WhatsApp and SMS messaging infrastructure
 - The Python community for amazing open-source tools
 
 ---

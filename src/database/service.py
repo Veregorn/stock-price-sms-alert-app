@@ -174,6 +174,29 @@ class DatabaseService:
 
             return stock
 
+    def get_stock_by_id(self, stock_id: int) -> Optional[Stock]:
+        """
+        Obtiene un stock por su ID.
+
+        Args:
+            stock_id: ID del stock
+
+        Returns:
+            Objeto Stock o None si no existe
+        """
+        with self.get_session() as session:
+            stock = session.query(Stock).filter(
+                Stock.id == stock_id
+            ).first()
+
+            if stock:
+                # Forzar la carga de todos los atributos antes de hacer expunge
+                session.refresh(stock)
+                # Hacer detach para poder usar fuera de la sesión
+                session.expunge(stock)
+
+            return stock
+
     def get_all_stocks(self, only_active: bool = False) -> List[Stock]:
         """
         Obtiene todos los stocks de la base de datos.
@@ -478,6 +501,68 @@ class DatabaseService:
                 session.expunge(alert)
 
             return alerts
+
+    def get_pending_alerts(self) -> List[Alert]:
+        """
+        Obtiene todas las alertas que no han sido enviadas.
+
+        Returns:
+            Lista de Alert que tienen message_sent=False
+        """
+        with self.get_session() as session:
+            alerts = session.query(Alert).filter(
+                Alert.message_sent == False
+            ).order_by(Alert.triggered_at).all()
+
+            # Forzar la carga de todos los atributos antes de hacer expunge
+            for alert in alerts:
+                session.refresh(alert)
+                session.expunge(alert)
+
+            return alerts
+
+    def update_alert_status(
+        self,
+        alert_id: int,
+        message_sent: bool,
+        notification_type: Optional[str] = None,
+        error_message: Optional[str] = None
+    ) -> Optional[Alert]:
+        """
+        Actualiza el estado de envío de una alerta.
+
+        Args:
+            alert_id: ID de la alerta
+            message_sent: Si el mensaje fue enviado exitosamente
+            notification_type: 'whatsapp' o 'sms'
+            error_message: Mensaje de error si falló el envío
+
+        Returns:
+            Alerta actualizada o None si no existe
+        """
+        with self.get_session() as session:
+            alert = session.query(Alert).filter(Alert.id == alert_id).first()
+
+            if not alert:
+                logger.error(f"No se encontró alerta con ID {alert_id}")
+                return None
+
+            alert.message_sent = message_sent
+            if notification_type:
+                alert.notification_type = notification_type
+            if error_message:
+                alert.error_message = error_message
+
+            session.flush()
+            session.refresh(alert)
+
+            logger.info(
+                f"Alerta {alert_id} actualizada: message_sent={message_sent}, "
+                f"type={notification_type}"
+            )
+
+            session.expunge(alert)
+            return alert
 
     # =========================================================================
     # OPERACIONES PARA NEWS ARTICLES
