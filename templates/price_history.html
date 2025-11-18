@@ -148,7 +148,7 @@
         try {
             const data = await apiRequest(`/stocks/${symbol}/prices/latest`);
 
-            if (!data || !data.current_price) {
+            if (!data || typeof data.close_price !== 'number') {
                 document.getElementById('price-stats').innerHTML = `
                     <div class="col-span-3 text-center py-8 text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-2"></i>
@@ -158,8 +158,21 @@
                 return;
             }
 
-            const changeClass = data.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
-            const icon = data.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+            const hasPreviousPrice = typeof data.previous_close === 'number';
+            const hasChange = typeof data.percentage_change === 'number';
+            const changeValue = hasChange ? data.percentage_change : 0;
+            const changeClass = hasChange
+                ? (changeValue >= 0 ? 'text-green-600' : 'text-red-600')
+                : 'text-gray-500';
+            const icon = hasChange
+                ? (changeValue >= 0 ? 'fa-arrow-up' : 'fa-arrow-down')
+                : 'fa-minus';
+            const previousPriceDisplay = hasPreviousPrice
+                ? formatCurrency(data.previous_close)
+                : 'N/A';
+            const percentageDisplay = hasChange
+                ? formatPercentage(changeValue)
+                : 'N/A';
 
             const statsHtml = `
                 <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
@@ -171,7 +184,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Current Price</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${formatCurrency(data.current_price)}</dd>
+                                    <dd class="text-3xl font-semibold text-gray-900">${formatCurrency(data.close_price)}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -187,7 +200,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Previous Price</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${formatCurrency(data.previous_price)}</dd>
+                                    <dd class="text-3xl font-semibold text-gray-900">${previousPriceDisplay}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -203,7 +216,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Change</dt>
-                                    <dd class="text-3xl font-semibold ${changeClass}">${formatPercentage(data.percentage_change)}</dd>
+                                    <dd class="text-3xl font-semibold ${changeClass}">${percentageDisplay}</dd>
                                 </dl>
                             </div>
                         </div>
