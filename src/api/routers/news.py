@@ -137,6 +137,8 @@ async def save_news_article(
     - **title**: Título de la noticia (obligatorio, 1-500 caracteres)
     - **description**: Descripción o resumen (opcional, máx 2000 caracteres)
     - **url**: URL de la noticia original (opcional, máx 1000 caracteres)
+    - **image_url**: URL de la imagen de la noticia (opcional, máx 1000 caracteres)
+    - **source**: Fuente de la noticia (opcional, máx 200 caracteres)
     - **published_at**: Fecha de publicación (opcional, ISO 8601)
 
     Retorna:
@@ -161,6 +163,8 @@ async def save_news_article(
             title=news_data.title,
             description=news_data.description,
             url=news_data.url,
+            image_url=news_data.image_url,
+            source=news_data.source,
             published_at=news_data.published_at
         )
 

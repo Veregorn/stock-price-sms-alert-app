@@ -532,6 +532,16 @@ class NewsArticleCreate(BaseModel):
         max_length=1000,
         description="URL de la noticia original"
     )
+    image_url: Optional[str] = Field(
+        None,
+        max_length=1000,
+        description="URL de la imagen de la noticia"
+    )
+    source: Optional[str] = Field(
+        None,
+        max_length=200,
+        description="Fuente de la noticia"
+    )
     published_at: Optional[datetime] = Field(
         None,
         description="Fecha de publicación de la noticia"
@@ -563,6 +573,14 @@ class NewsArticleResponse(BaseModel):
     url: Optional[str] = Field(
         None,
         description="URL de la noticia"
+    )
+    image_url: Optional[str] = Field(
+        None,
+        description="URL de la imagen de la noticia"
+    )
+    source: Optional[str] = Field(
+        None,
+        description="Fuente de la noticia"
     )
     published_at: Optional[datetime] = Field(
         None,

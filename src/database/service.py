@@ -449,6 +449,8 @@ class DatabaseService:
         title: str,
         description: Optional[str] = None,
         url: Optional[str] = None,
+        image_url: Optional[str] = None,
+        source: Optional[str] = None,
         published_at: Optional[datetime] = None
     ) -> Optional[NewsArticle]:
         """
@@ -459,6 +461,8 @@ class DatabaseService:
             title: Título de la noticia
             description: Descripción o resumen
             url: URL de la noticia
+            image_url: URL de la imagen de la noticia
+            source: Fuente de la noticia
             published_at: Fecha de publicación
 
         Returns:
@@ -475,6 +479,8 @@ class DatabaseService:
                 title=title,
                 description=description,
                 url=url,
+                image_url=image_url,
+                source=source,
                 published_at=published_at
             )
             session.add(article)

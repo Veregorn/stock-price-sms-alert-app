@@ -134,6 +134,8 @@ class NewsArticle(Base):
     title = Column(String(500), nullable=False)  # Título de la noticia
     description = Column(Text)  # Descripción o resumen
     url = Column(String(1000))  # URL a la noticia original
+    image_url = Column(String(1000))  # URL de la imagen de la noticia
+    source = Column(String(200))  # Fuente de la noticia (ej: "Bloomberg", "Reuters")
     published_at = Column(DateTime)  # Fecha de publicación de la noticia
     fetched_at = Column(DateTime, default=datetime.utcnow)  # Cuándo la obtuvimos
 

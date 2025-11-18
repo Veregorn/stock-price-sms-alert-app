@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}{{ symbol }} Price History - Stock Price Alert{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/stocks" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600">
+                    <i class="fas fa-layer-group mr-2"></i>
+                    Stocks
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">{{ symbol }} Price History</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header with stock info -->
+    <div class="flex justify-between items-start mb-6">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900" id="stock-title">{{ symbol }}</h2>
+            <p class="text-gray-600 mt-1" id="company-name">Loading...</p>
+        </div>
+        <button onclick="openAddPriceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors">
+            <i class="fas fa-plus mr-2"></i> Add Price
+        </button>
+    </div>
+
+    <!-- Current price card -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="price-stats">
+        <!-- Stats will load dynamically -->
+        <div class="animate-pulse">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div class="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time period filter -->
+    <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                    Price History
+                </h3>
+                <div class="flex space-x-2">
+                    <button onclick="changePeriod(7)" id="btn-7d" class="px-3 py-1 text-sm rounded-md bg-indigo-600 text-white">7D</button>
+                    <button onclick="changePeriod(30)" id="btn-30d" class="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100">30D</button>
+                    <button onclick="changePeriod(90)" id="btn-90d" class="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100">90D</button>
+                    <button onclick="changePeriod(0)" id="btn-all" class="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100">All</button>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="relative" style="height: 400px;">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price history table -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-table text-green-500 mr-2"></i>
+                Recent Prices
+            </h3>
+            <div id="prices-table-container">
+                <!-- Table will load dynamically -->
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading prices...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Price Modal -->
+<div id="addPriceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50" onclick="closeAddPriceModal(event)">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" onclick="event.stopPropagation()">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Price</h3>
+            <form id="addPriceForm" onsubmit="handleAddPrice(event)">
+                <div class="mb-4">
+                    <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+                        Price (USD) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" id="price" name="price" required step="0.01" min="0.01"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="e.g., 150.25">
+                </div>
+
+                <div class="mb-6">
+                    <label for="recorded_at" class="block text-sm font-medium text-gray-700 mb-2">
+                        Date & Time
+                    </label>
+                    <input type="datetime-local" id="recorded_at" name="recorded_at"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <p class="mt-1 text-sm text-gray-500">Leave empty for current time</p>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeAddPriceModal()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i> Add Price
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const symbol = '{{ symbol }}';
+    let chart = null;
+    let currentPeriod = 7;
+
+    // Load stock details
+    async function loadStockDetails() {
+        try {
+            const stock = await apiRequest(`/stocks/${symbol}`);
+            document.getElementById('company-name').textContent = stock.company_name;
+        } catch (error) {
+            document.getElementById('company-name').textContent = 'Error loading stock details';
+        }
+    }
+
+    // Load price statistics
+    async function loadPriceStats() {
+        try {
+            const data = await apiRequest(`/stocks/${symbol}/prices/latest`);
+
+            if (!data || !data.current_price) {
+                document.getElementById('price-stats').innerHTML = `
+                    <div class="col-span-3 text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No price data available</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const changeClass = data.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
+            const icon = data.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+
+            const statsHtml = `
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-dollar-sign text-green-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Current Price</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${formatCurrency(data.current_price)}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-history text-blue-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Previous Price</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${formatCurrency(data.previous_price)}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas ${icon} ${changeClass} text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Change</dt>
+                                    <dd class="text-3xl font-semibold ${changeClass}">${formatPercentage(data.percentage_change)}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('price-stats').innerHTML = statsHtml;
+        } catch (error) {
+            document.getElementById('price-stats').innerHTML = `
+                <div class="col-span-3 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error loading price statistics
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Load price history and update chart
+    async function loadPriceHistory() {
+        try {
+            const params = currentPeriod > 0 ? `?days=${currentPeriod}` : '';
+            const data = await apiRequest(`/stocks/${symbol}/prices${params}`);
+
+            if (!data || !data.prices || data.prices.length === 0) {
+                destroyChart();
+                document.querySelector('#priceChart').parentElement.innerHTML = `
+                    <div class="text-center py-16 text-gray-500">
+                        <i class="fas fa-chart-line text-4xl mb-2"></i>
+                        <p>No price data available for this period</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Prepare chart data
+            const labels = data.prices.map(p => new Date(p.recorded_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }));
+            const prices = data.prices.map(p => p.price);
+
+            // Update chart
+            updateChart(labels, prices);
+
+        } catch (error) {
+            console.error('Error loading price history:', error);
+        }
+    }
+
+    // Update or create chart
+    function updateChart(labels, prices) {
+        const ctx = document.getElementById('priceChart');
+
+        if (!ctx) return;
+
+        if (chart) {
+            chart.destroy();
+        }
+
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `${symbol} Price (USD)`,
+                    data: prices,
+                    borderColor: 'rgb(79, 70, 229)',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.1,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Price: ${formatCurrency(context.parsed.y)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Destroy chart
+    function destroyChart() {
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+    }
+
+    // Load prices table
+    async function loadPricesTable() {
+        try {
+            const data = await apiRequest(`/stocks/${symbol}/prices?limit=10`);
+
+            if (!data || !data.prices || data.prices.length === 0) {
+                document.getElementById('prices-table-container').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No price records available</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHtml = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${data.prices.map((price, index) => {
+                                const nextPrice = data.prices[index + 1];
+                                let changeHtml = '<span class="text-gray-500">-</span>';
+
+                                if (nextPrice) {
+                                    const change = ((price.price - nextPrice.price) / nextPrice.price) * 100;
+                                    const changeClass = change >= 0 ? 'text-green-600' : 'text-red-600';
+                                    const icon = change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                                    changeHtml = `<span class="${changeClass}"><i class="fas ${icon}"></i> ${formatPercentage(change)}</span>`;
+                                }
+
+                                return `
+                                    <tr class="hover:bg-gray-50 fade-in">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            ${formatDate(price.recorded_at)}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                            ${formatCurrency(price.price)}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            ${changeHtml}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('prices-table-container').innerHTML = tableHtml;
+        } catch (error) {
+            document.getElementById('prices-table-container').innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error loading price records
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Change time period
+    function changePeriod(days) {
+        currentPeriod = days;
+
+        // Update button states
+        document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+            btn.classList.remove('bg-indigo-600', 'text-white');
+            btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+        });
+
+        const btnId = days === 0 ? 'btn-all' : `btn-${days}d`;
+        const activeBtn = document.getElementById(btnId);
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+        activeBtn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+
+        loadPriceHistory();
+    }
+
+    // Open add price modal
+    function openAddPriceModal() {
+        document.getElementById('addPriceForm').reset();
+        document.getElementById('addPriceModal').classList.remove('hidden');
+    }
+
+    // Close add price modal
+    function closeAddPriceModal(event) {
+        if (!event || event.target.id === 'addPriceModal') {
+            document.getElementById('addPriceModal').classList.add('hidden');
+        }
+    }
+
+    // Handle add price form submit
+    async function handleAddPrice(event) {
+        event.preventDefault();
+
+        const price = parseFloat(document.getElementById('price').value);
+        const recordedAt = document.getElementById('recorded_at').value;
+
+        const formData = {
+            price: price
+        };
+
+        if (recordedAt) {
+            formData.recorded_at = new Date(recordedAt).toISOString();
+        }
+
+        try {
+            await apiRequest(`/stocks/${symbol}/prices`, {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+
+            showToast('Price added successfully', 'success');
+            closeAddPriceModal();
+
+            // Reload all data
+            loadPriceStats();
+            loadPriceHistory();
+            loadPricesTable();
+        } catch (error) {
+            // Error already shown by apiRequest
+        }
+    }
+
+    // Load all data on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStockDetails();
+        loadPriceStats();
+        loadPriceHistory();
+        loadPricesTable();
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeAddPriceModal();
+        }
+    });
+</script>
+{% endblock %}

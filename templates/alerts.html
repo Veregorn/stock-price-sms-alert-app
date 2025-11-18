@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts - Stock Price Alert{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-gray-900">Price Alerts</h2>
+
+        <!-- Filter by time period -->
+        <div class="flex items-center space-x-2">
+            <label for="days-filter" class="text-sm font-medium text-gray-700">Show alerts from:</label>
+            <select id="days-filter" onchange="changeDaysFilter(this.value)"
+                    class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="7">Last 7 days</option>
+                <option value="30" selected>Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="0">All time</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8" id="summary-container">
+        <!-- Summary will load dynamically -->
+        <div class="animate-pulse">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div class="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts list -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-bell text-yellow-500 mr-2"></i>
+                Alert History
+            </h3>
+            <div id="alerts-container">
+                <!-- Alerts will load dynamically -->
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading alerts...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentDays = 30;
+
+    // Load summary statistics
+    async function loadSummary() {
+        try {
+            const params = currentDays > 0 ? `?days=${currentDays}` : '';
+            const data = await apiRequest(`/alerts${params}`);
+
+            if (!data || !data.alerts) {
+                document.getElementById('summary-container').innerHTML = `
+                    <div class="col-span-3 bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-red-800 text-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Error loading alert statistics
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const totalAlerts = data.alerts.length;
+            const increaseAlerts = data.alerts.filter(a => a.percentage_change > 0).length;
+            const decreaseAlerts = data.alerts.filter(a => a.percentage_change < 0).length;
+
+            const summaryHtml = `
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-bell text-yellow-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Alerts</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${totalAlerts}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-arrow-up text-green-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Price Increases</dt>
+                                    <dd class="text-3xl font-semibold text-green-600">${increaseAlerts}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-arrow-down text-red-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Price Decreases</dt>
+                                    <dd class="text-3xl font-semibold text-red-600">${decreaseAlerts}</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('summary-container').innerHTML = summaryHtml;
+        } catch (error) {
+            document.getElementById('summary-container').innerHTML = `
+                <div class="col-span-3 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error loading alert statistics
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Load alerts list
+    async function loadAlerts() {
+        try {
+            const params = currentDays > 0 ? `?days=${currentDays}` : '';
+            const data = await apiRequest(`/alerts${params}`);
+
+            if (!data || !data.alerts || data.alerts.length === 0) {
+                document.getElementById('alerts-container').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No alerts found for the selected period</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Fetch stock symbols
+            const stocksData = await apiRequest('/stocks');
+            const stocksMap = {};
+            stocksData.stocks.forEach(stock => {
+                stocksMap[stock.id] = stock.symbol;
+            });
+
+            const alertsHtml = data.alerts.map(alert => {
+                // Validate data
+                if (!alert.percentage_change || !alert.price_after || !alert.stock_id) {
+                    return '';
+                }
+
+                const symbol = stocksMap[alert.stock_id] || 'UNKNOWN';
+                const changeClass = alert.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
+                const bgClass = alert.percentage_change >= 0 ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50';
+                const icon = alert.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                const direction = alert.percentage_change >= 0 ? 'increased' : 'decreased';
+
+                return `
+                    <div class="border-l-4 ${bgClass} p-4 mb-3 rounded fade-in">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <a href="/stocks/${symbol}/prices"
+                                       class="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
+                                        ${symbol}
+                                    </a>
+                                    <span class="ml-3 ${changeClass} font-bold">
+                                        <i class="fas ${icon}"></i>
+                                        ${formatPercentage(alert.percentage_change)}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    ${formatDate(alert.triggered_at)}
+                                </p>
+                                <p class="text-sm text-gray-700">
+                                    Price ${direction} from ${formatCurrency(alert.price_before)} to ${formatCurrency(alert.price_after)}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Alert threshold: ${alert.threshold_at_time}%
+                                </p>
+                            </div>
+                            <div class="ml-4 text-right">
+                                <p class="text-2xl font-bold ${changeClass}">
+                                    ${formatCurrency(alert.price_after)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).filter(html => html !== '').join('');
+
+            // If no valid alerts after filtering
+            if (alertsHtml === '') {
+                document.getElementById('alerts-container').innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No valid alerts to display</p>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('alerts-container').innerHTML = alertsHtml;
+        } catch (error) {
+            document.getElementById('alerts-container').innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Error loading alerts
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    // Change days filter
+    function changeDaysFilter(days) {
+        currentDays = parseInt(days);
+        loadSummary();
+        loadAlerts();
+    }
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSummary();
+        loadAlerts();
+    });
+</script>
+{% endblock %}

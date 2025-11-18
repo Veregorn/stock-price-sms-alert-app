@@ -70,7 +70,7 @@
     // Load dashboard statistics
     async function loadDashboardStats() {
         try {
-            const data = await apiRequest('/dashboard/stats');
+            const data = await apiRequest('/dashboard/summary');
 
             const statsHtml = `
                 <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
@@ -109,12 +109,12 @@
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-chart-line text-purple-500 text-2xl"></i>
+                                <i class="fas fa-bell text-yellow-500 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Prices</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${data.total_prices}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Recent Alerts (24h)</dt>
+                                    <dd class="text-3xl font-semibold text-gray-900">${data.recent_alerts_24h}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -125,12 +125,12 @@
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-bell text-yellow-500 text-2xl"></i>
+                                <i class="fas fa-clock text-purple-500 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Alerts (30 days)</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${data.total_alerts}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Last Update</dt>
+                                    <dd class="text-lg font-semibold text-gray-900">${data.last_price_update ? formatDate(data.last_price_update) : 'No data'}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -232,7 +232,7 @@
     // Load active stocks
     async function loadActiveStocks() {
         try {
-            const data = await apiRequest('/stocks?active_only=true');
+            const data = await apiRequest('/stocks?only_active=true');
 
             if (data.stocks.length === 0) {
                 document.getElementById('stocks-container').innerHTML = `
