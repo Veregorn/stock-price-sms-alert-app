@@ -8,7 +8,7 @@ la actualización automática de precios de stocks cada 15 minutos.
 import logging
 from typing import Optional
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime
 
 from .database.service import DatabaseService
@@ -25,16 +25,18 @@ class PriceUpdateScheduler:
     periódicas sin bloquear la aplicación FastAPI.
     """
 
-    def __init__(self, db_service: DatabaseService, interval_minutes: int = 15):
+    def __init__(self, db_service: DatabaseService, hour: int = 18, minute: int = 0):
         """
         Inicializa el scheduler.
 
         Args:
             db_service: Instancia del servicio de base de datos
-            interval_minutes: Intervalo en minutos entre actualizaciones (default: 15)
+            hour: Hora del día para ejecutar actualización (0-23, default: 18 = 6 PM)
+            minute: Minuto de la hora para ejecutar (0-59, default: 0)
         """
         self.db_service = db_service
-        self.interval_minutes = interval_minutes
+        self.hour = hour
+        self.minute = minute
         self.scheduler: Optional[BackgroundScheduler] = None
         self.stock_fetcher = StockFetcher()
 
@@ -42,8 +44,8 @@ class PriceUpdateScheduler:
         """
         Inicia el scheduler en modo background.
 
-        Configura un trigger de intervalo para ejecutar update_all_prices()
-        cada N minutos según la configuración.
+        Configura un trigger diario para ejecutar update_all_prices()
+        una vez al día a la hora especificada (después del cierre de mercado).
         """
         if self.scheduler is not None:
             logger.warning("Scheduler already started")
@@ -54,21 +56,21 @@ class PriceUpdateScheduler:
             job_defaults={
                 'coalesce': True,  # Combinar ejecuciones perdidas
                 'max_instances': 1,  # Solo una instancia del job a la vez
-                'misfire_grace_time': 300  # 5 minutos de gracia para ejecuciones perdidas
+                'misfire_grace_time': 3600  # 1 hora de gracia para ejecuciones perdidas
             }
         )
 
-        # Añadir job de actualización de precios
+        # Añadir job de actualización de precios (diario)
         self.scheduler.add_job(
             func=self._update_all_prices_job,
-            trigger=IntervalTrigger(minutes=self.interval_minutes),
+            trigger=CronTrigger(hour=self.hour, minute=self.minute, timezone="UTC"),
             id='update_stock_prices',
             name='Update all stock prices',
             replace_existing=True
         )
 
         self.scheduler.start()
-        logger.info(f"Scheduler started - will update prices every {self.interval_minutes} minutes")
+        logger.info(f"Scheduler started - will update prices daily at {self.hour:02d}:{self.minute:02d} UTC")
 
     def stop(self):
         """

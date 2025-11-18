@@ -53,11 +53,12 @@ async def lifespan(app: FastAPI):
     db_service = DatabaseService()
 
     # Inicializar y arrancar scheduler
-    scheduler = PriceUpdateScheduler(db_service, interval_minutes=15)
+    # Ejecutar diariamente a las 18:00 UTC (después del cierre de mercado US)
+    scheduler = PriceUpdateScheduler(db_service, hour=18, minute=0)
     set_scheduler(scheduler)
     scheduler.start()
 
-    logger.info("✓ Scheduler started - automatic price updates every 15 minutes")
+    logger.info("✓ Scheduler started - automatic price updates daily at 18:00 UTC")
     logger.info("=" * 70)
 
     yield  # La aplicación corre aquí
@@ -188,7 +189,7 @@ async def scheduler_status():
 
     return {
         "status": "running",
-        "interval_minutes": scheduler.interval_minutes,
+        "schedule": f"Daily at {scheduler.hour:02d}:{scheduler.minute:02d} UTC",
         "active_jobs": len(jobs),
         "jobs": [
             {
