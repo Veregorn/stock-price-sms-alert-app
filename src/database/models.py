@@ -139,6 +139,12 @@ class NewsArticle(Base):
     published_at = Column(DateTime)  # Fecha de publicación de la noticia
     fetched_at = Column(DateTime, default=datetime.utcnow)  # Cuándo la obtuvimos
 
+    # Unsplash attribution (required by Unsplash API Guidelines when using fallback images)
+    photographer_name = Column(String(200))  # Photographer's name from Unsplash
+    photographer_username = Column(String(100))  # Photographer's Unsplash username
+    photographer_url = Column(String(500))  # Link to photographer's Unsplash profile
+    unsplash_download_location = Column(String(500))  # Endpoint to trigger download event
+
     # Relación inversa: Esta noticia pertenece a un stock
     stock = relationship('Stock', back_populates='news_articles')
 

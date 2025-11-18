@@ -17,6 +17,7 @@ class Config:
     # API Keys
     ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
     NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+    UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
 
     # Twilio Credentials
     TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
@@ -36,6 +37,7 @@ class Config:
     # API Endpoints
     ALPHA_VANTAGE_ENDPOINT = "https://www.alphavantage.co/query"
     NEWS_API_ENDPOINT = "https://newsapi.org/v2/everything"
+    UNSPLASH_API_ENDPOINT = "https://api.unsplash.com"
 
     # Request Settings
     API_TIMEOUT = 10  # seconds

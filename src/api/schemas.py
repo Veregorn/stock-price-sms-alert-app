@@ -591,6 +591,24 @@ class NewsArticleResponse(BaseModel):
         description="Fecha en que se guardó la noticia"
     )
 
+    # Unsplash attribution fields (optional, only present when using Unsplash fallback images)
+    photographer_name: Optional[str] = Field(
+        None,
+        description="Photographer's name (Unsplash)"
+    )
+    photographer_username: Optional[str] = Field(
+        None,
+        description="Photographer's username (Unsplash)"
+    )
+    photographer_url: Optional[str] = Field(
+        None,
+        description="Photographer's profile URL (Unsplash)"
+    )
+    unsplash_download_location: Optional[str] = Field(
+        None,
+        description="Unsplash download endpoint (for tracking)"
+    )
+
     model_config = ConfigDict(
         from_attributes=True,
         json_schema_extra={

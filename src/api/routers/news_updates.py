@@ -9,6 +9,7 @@ import logging
 
 from ...database import DatabaseService
 from ...news_fetcher import NewsFetcher
+from ...image_fetcher import ImageFetcher
 from ..dependencies import get_db
 from ..schemas import ErrorResponse
 
@@ -87,12 +88,13 @@ async def update_stock_news(
             detail=f"Stock with symbol '{symbol.upper()}' not found"
         )
 
-    # Initialize news fetcher
-    fetcher = NewsFetcher()
+    # Initialize fetchers
+    news_fetcher = NewsFetcher()
+    image_fetcher = ImageFetcher()
 
     # Fetch news from News API using company name
     try:
-        articles = fetcher.get_articles(stock.company_name, limit=limit)
+        articles = news_fetcher.get_articles(stock.company_name, limit=limit)
         logger.info(f"Fetched {len(articles)} articles for {symbol} from News API")
     except Exception as e:
         logger.error(f"Error fetching news for {symbol}: {str(e)}")
@@ -135,6 +137,25 @@ async def update_stock_news(
                 except:
                     pass
 
+            # Get fallback image from Unsplash if no image provided
+            photographer_name = None
+            photographer_username = None
+            photographer_url = None
+            unsplash_download_location = None
+
+            if not image_url:
+                unsplash_data = image_fetcher.get_fallback_image(stock.company_name)
+                if unsplash_data:
+                    image_url = unsplash_data["image_url"]
+                    photographer_name = unsplash_data["photographer_name"]
+                    photographer_username = unsplash_data["photographer_username"]
+                    photographer_url = unsplash_data["photographer_url"]
+                    unsplash_download_location = unsplash_data["download_location"]
+
+                    # Trigger download event (required by Unsplash API)
+                    image_fetcher.trigger_download(unsplash_download_location)
+                    logger.info(f"Using Unsplash fallback image for {symbol} by {photographer_name}")
+
             # Save to database
             saved_article = db.save_news_article(
                 symbol=symbol,
@@ -143,7 +164,11 @@ async def update_stock_news(
                 url=url,
                 image_url=image_url,
                 source=source,
-                published_at=published_at
+                published_at=published_at,
+                photographer_name=photographer_name,
+                photographer_username=photographer_username,
+                photographer_url=photographer_url,
+                unsplash_download_location=unsplash_download_location
             )
 
             if saved_article:
@@ -243,8 +268,9 @@ async def update_all_stock_news(
     total_articles_saved = 0
     results = []
 
-    # Initialize fetcher once
-    fetcher = NewsFetcher()
+    # Initialize fetchers once
+    news_fetcher = NewsFetcher()
+    image_fetcher = ImageFetcher()
 
     # Update each stock
     for stock in active_stocks:
@@ -260,7 +286,7 @@ async def update_all_stock_news(
 
         try:
             # Fetch news from News API
-            articles = fetcher.get_articles(stock.company_name, limit=limit)
+            articles = news_fetcher.get_articles(stock.company_name, limit=limit)
             result["articles_fetched"] = len(articles)
 
             # Save articles to database
@@ -293,6 +319,24 @@ async def update_all_stock_news(
                         except:
                             pass
 
+                    # Get fallback image from Unsplash if no image provided
+                    photographer_name = None
+                    photographer_username = None
+                    photographer_url = None
+                    unsplash_download_location = None
+
+                    if not image_url:
+                        unsplash_data = image_fetcher.get_fallback_image(stock.company_name)
+                        if unsplash_data:
+                            image_url = unsplash_data["image_url"]
+                            photographer_name = unsplash_data["photographer_name"]
+                            photographer_username = unsplash_data["photographer_username"]
+                            photographer_url = unsplash_data["photographer_url"]
+                            unsplash_download_location = unsplash_data["download_location"]
+
+                            # Trigger download event (required by Unsplash API)
+                            image_fetcher.trigger_download(unsplash_download_location)
+
                     # Save to database
                     saved_article = db.save_news_article(
                         symbol=stock.symbol,
@@ -301,7 +345,11 @@ async def update_all_stock_news(
                         url=url,
                         image_url=image_url,
                         source=source,
-                        published_at=published_at
+                        published_at=published_at,
+                        photographer_name=photographer_name,
+                        photographer_username=photographer_username,
+                        photographer_url=photographer_url,
+                        unsplash_download_location=unsplash_download_location
                     )
 
                     if saved_article:

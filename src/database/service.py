@@ -525,7 +525,11 @@ class DatabaseService:
         url: Optional[str] = None,
         image_url: Optional[str] = None,
         source: Optional[str] = None,
-        published_at: Optional[datetime] = None
+        published_at: Optional[datetime] = None,
+        photographer_name: Optional[str] = None,
+        photographer_username: Optional[str] = None,
+        photographer_url: Optional[str] = None,
+        unsplash_download_location: Optional[str] = None
     ) -> Optional[NewsArticle]:
         """
         Guarda una noticia relacionada con un stock.
@@ -538,6 +542,10 @@ class DatabaseService:
             image_url: URL de la imagen de la noticia
             source: Fuente de la noticia
             published_at: Fecha de publicación
+            photographer_name: Nombre del fotógrafo (Unsplash)
+            photographer_username: Username del fotógrafo (Unsplash)
+            photographer_url: URL del perfil del fotógrafo (Unsplash)
+            unsplash_download_location: Endpoint para trigger download event (Unsplash)
 
         Returns:
             Objeto NewsArticle creado o None si el stock no existe
@@ -555,7 +563,11 @@ class DatabaseService:
                 url=url,
                 image_url=image_url,
                 source=source,
-                published_at=published_at
+                published_at=published_at,
+                photographer_name=photographer_name,
+                photographer_username=photographer_username,
+                photographer_url=photographer_url,
+                unsplash_download_location=unsplash_download_location
             )
             session.add(article)
             session.flush()

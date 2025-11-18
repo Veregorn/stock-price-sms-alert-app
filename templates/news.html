@@ -119,15 +119,37 @@
                 const imageUrl = article.image_url || `https://placehold.co/400x200/4F46E5/FFFFFF/png?text=${encodeURIComponent(article.symbol)}+News`;
                 const source = article.source || 'Unknown Source';
 
+                // Check if this is an Unsplash image (for attribution)
+                const hasUnsplashAttribution = article.photographer_name && article.photographer_username;
+
                 return `
                     <div class="bg-white shadow rounded-lg overflow-hidden mb-6 fade-in hover:shadow-lg transition-shadow">
                         <div class="md:flex">
                             <!-- Article image -->
-                            <div class="md:flex-shrink-0">
+                            <div class="md:flex-shrink-0 relative">
                                 <img class="h-48 w-full object-cover md:w-48"
                                      src="${imageUrl}"
                                      alt="${article.title}"
                                      onerror="this.src='https://placehold.co/400x200/6B7280/FFFFFF/png?text=No+Image'">
+                                ${hasUnsplashAttribution ? `
+                                    <!-- Unsplash Attribution (required by Unsplash API Guidelines) -->
+                                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs px-2 py-1">
+                                        Photo by
+                                        <a href="${article.photographer_url}?utm_source=Stock_Price_Alert&utm_medium=referral"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="underline hover:text-gray-300">
+                                            ${article.photographer_name}
+                                        </a>
+                                        on
+                                        <a href="https://unsplash.com?utm_source=Stock_Price_Alert&utm_medium=referral"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="underline hover:text-gray-300">
+                                            Unsplash
+                                        </a>
+                                    </div>
+                                ` : ''}
                             </div>
 
                             <!-- Article content -->
