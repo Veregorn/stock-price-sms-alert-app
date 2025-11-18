@@ -2,6 +2,7 @@ requests==2.31.0
 python-dotenv==0.21.0
 twilio==9.0.5
 sqlalchemy==2.0.23
+APScheduler==3.10.4  # Scheduler para tareas periódicas
 
 # API Dependencies
 fastapi==0.104.1
