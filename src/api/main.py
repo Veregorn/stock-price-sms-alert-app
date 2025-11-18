@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ..config import config
-from .routers import stocks, prices, dashboard, alerts, news, pages, stock_updates
+from .routers import stocks, prices, dashboard, alerts, news, pages, stock_updates, news_updates
 
 # Configurar rutas de templates y archivos estáticos
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -72,6 +72,7 @@ app.include_router(dashboard.router, prefix="/api")
 app.include_router(alerts.router, prefix="/api")
 app.include_router(news.router, prefix="/api")
 app.include_router(stock_updates.router, prefix="/api")
+app.include_router(news_updates.router, prefix="/api")
 
 # Router de páginas HTML (sin prefijo)
 app.include_router(pages.router)

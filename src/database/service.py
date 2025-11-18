@@ -483,6 +483,40 @@ class DatabaseService:
     # OPERACIONES PARA NEWS ARTICLES
     # =========================================================================
 
+    def has_news_article_by_url(
+        self,
+        symbol: str,
+        url: str
+    ) -> bool:
+        """
+        Verifica si ya existe una noticia con la misma URL para un stock.
+
+        La URL es el identificador único más confiable para detectar duplicados,
+        ya que no cambia aunque el título o descripción se actualicen.
+
+        Args:
+            symbol: Símbolo del stock
+            url: URL de la noticia
+
+        Returns:
+            True si existe una noticia con esa URL, False en caso contrario
+        """
+        if not url:
+            # Si no hay URL, no podemos verificar duplicados de forma confiable
+            return False
+
+        stock = self.get_stock_by_symbol(symbol)
+        if not stock:
+            return False
+
+        with self.get_session() as session:
+            article = session.query(NewsArticle).filter(
+                NewsArticle.stock_id == stock.id,
+                NewsArticle.url == url
+            ).first()
+
+            return article is not None
+
     def save_news_article(
         self,
         symbol: str,
