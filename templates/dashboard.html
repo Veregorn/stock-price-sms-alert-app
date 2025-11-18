@@ -4,7 +4,13 @@
 
 {% block content %}
 <div class="px-4 sm:px-0">
-    <h2 class="text-3xl font-bold text-gray-900 mb-6">Dashboard</h2>
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-3xl font-bold text-gray-900">Dashboard</h2>
+        <button id="update-prices-btn" onclick="updateAllPrices()" class="btn-primary">
+            <i class="fas fa-sync-alt mr-2"></i>
+            Update All Prices
+        </button>
+    </div>
 
     <!-- General statistics -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8" id="stats-container">
@@ -298,6 +304,73 @@
                 </div>
             `;
         }
+    }
+
+    // Update all prices manually
+    async function updateAllPrices() {
+        const button = document.getElementById('update-prices-btn');
+        const originalContent = button.innerHTML;
+
+        try {
+            // Disable button and show loading state
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+            button.classList.add('opacity-75', 'cursor-not-allowed');
+
+            // Call API to update all prices
+            const response = await fetch('/api/stocks/update-all-prices', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Show success toast
+            showToast('success', `Successfully updated ${data.updated} stocks!`);
+
+            // Reload dashboard data to show new prices
+            setTimeout(() => {
+                loadDashboardStats();
+                loadRecentAlerts();
+                loadActiveStocks();
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error updating prices:', error);
+            showToast('error', 'Failed to update prices. Please try again.');
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = originalContent;
+            button.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
+    }
+
+    // Toast notification helper
+    function showToast(type, message) {
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+        toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center fade-in`;
+        toast.innerHTML = `
+            <i class="fas ${icon} mr-3 text-xl"></i>
+            <span>${message}</span>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 
     // Load all data on page load
