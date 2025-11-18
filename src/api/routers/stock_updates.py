@@ -170,35 +170,48 @@ async def update_stock_price(
     # Check if alert should be triggered
     alert_triggered = False
     alert = None
+    alert_already_exists = False
 
     if stock.is_active and abs(percentage_change) >= stock.threshold:
-        # Create alert
-        try:
-            alert = db.create_alert(
-                symbol=symbol,
-                percentage_change=percentage_change,
-                threshold_at_time=stock.threshold,
-                price_before=day_before_close,
-                price_after=yesterday_close,
-                message_sent=False,  # Will be updated by notification service
-                notification_type=None,
-                error_message=None
+        # Check if an alert already exists for this stock with these prices
+        # Alpha Vantage returns daily data, so we avoid duplicate alerts for the same day
+        if db.has_alert_for_price_date(symbol, price_date, day_before_close, yesterday_close):
+            alert_already_exists = True
+            logger.info(
+                f"Alert for {symbol} with prices {day_before_close} -> {yesterday_close} already exists, skipping duplicate"
             )
-
-            if alert:
-                alert_triggered = True
-                logger.warning(
-                    f"Alert created for {symbol}: {percentage_change:+.2f}% "
-                    f"(threshold: {stock.threshold}%)"
+        else:
+            # Create alert
+            try:
+                alert = db.create_alert(
+                    symbol=symbol,
+                    percentage_change=percentage_change,
+                    threshold_at_time=stock.threshold,
+                    price_before=day_before_close,
+                    price_after=yesterday_close,
+                    message_sent=False,  # Will be updated by notification service
+                    notification_type=None,
+                    error_message=None
                 )
-        except Exception as e:
-            logger.error(f"Error creating alert for {symbol}: {str(e)}")
-            # Don't fail the request if alert creation fails
-            pass
+
+                if alert:
+                    alert_triggered = True
+                    logger.warning(
+                        f"Alert created for {symbol}: {percentage_change:+.2f}% "
+                        f"(threshold: {stock.threshold}%)"
+                    )
+            except Exception as e:
+                logger.error(f"Error creating alert for {symbol}: {str(e)}")
+                # Don't fail the request if alert creation fails
+                pass
 
     # Return response
+    response_message = "Price updated successfully"
+    if alert_already_exists:
+        response_message += " (alert already exists for this date)"
+
     return {
-        "message": "Price updated successfully",
+        "message": response_message,
         "symbol": symbol.upper(),
         "price": {
             "id": price_record.id,
@@ -210,6 +223,7 @@ async def update_stock_price(
             "created_at": price_record.created_at.isoformat()
         },
         "alert_triggered": alert_triggered,
+        "alert_already_exists": alert_already_exists,
         "alert": {
             "id": alert.id,
             "stock_id": alert.stock_id,
@@ -333,6 +347,7 @@ async def update_all_stock_prices(
             "price": None,
             "change": None,
             "alert_triggered": False,
+            "alert_already_exists": False,
             "error": None
         }
 
@@ -366,20 +381,27 @@ async def update_all_stock_prices(
 
                 # Check for alert
                 if abs(percentage_change) >= stock.threshold:
-                    alert = db.create_alert(
-                        symbol=stock.symbol,
-                        percentage_change=percentage_change,
-                        threshold_at_time=stock.threshold,
-                        price_before=day_before_close,
-                        price_after=yesterday_close,
-                        message_sent=False,
-                        notification_type=None,
-                        error_message=None
-                    )
+                    # Check if alert already exists with these prices
+                    if not db.has_alert_for_price_date(stock.symbol, price_date, day_before_close, yesterday_close):
+                        alert = db.create_alert(
+                            symbol=stock.symbol,
+                            percentage_change=percentage_change,
+                            threshold_at_time=stock.threshold,
+                            price_before=day_before_close,
+                            price_after=yesterday_close,
+                            message_sent=False,
+                            notification_type=None,
+                            error_message=None
+                        )
 
-                    if alert:
-                        result["alert_triggered"] = True
-                        alerts_count += 1
+                        if alert:
+                            result["alert_triggered"] = True
+                            alerts_count += 1
+                    else:
+                        logger.info(
+                            f"Alert for {stock.symbol} with prices {day_before_close} -> {yesterday_close} already exists, skipping"
+                        )
+                        result["alert_already_exists"] = True
 
             else:
                 result["error"] = "Failed to save price to database"

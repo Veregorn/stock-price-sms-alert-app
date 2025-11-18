@@ -403,6 +403,46 @@ class DatabaseService:
             session.expunge(alert)
             return alert
 
+    def has_alert_for_price_date(
+        self,
+        symbol: str,
+        price_date: datetime,
+        price_before: float,
+        price_after: float
+    ) -> bool:
+        """
+        Verifica si ya existe una alerta para un stock con los mismos precios.
+
+        Como Alpha Vantage retorna datos diarios (no por hora), queremos evitar
+        crear alertas duplicadas si el endpoint se ejecuta varias veces el mismo día.
+        Comparamos por los precios before/after que son únicos para cada cierre diario.
+
+        Args:
+            symbol: Símbolo del stock
+            price_date: Fecha del precio (para logging/debugging)
+            price_before: Precio anterior (cierre del día previo)
+            price_after: Precio nuevo (cierre del día)
+
+        Returns:
+            True si existe una alerta con esos precios, False en caso contrario
+        """
+        stock = self.get_stock_by_symbol(symbol)
+        if not stock:
+            return False
+
+        with self.get_session() as session:
+            # Buscar alertas del stock con los mismos precios
+            # Usamos tolerancia para comparación de floats
+            tolerance = 0.001
+
+            alert = session.query(Alert).filter(
+                Alert.stock_id == stock.id,
+                Alert.price_before.between(price_before - tolerance, price_before + tolerance),
+                Alert.price_after.between(price_after - tolerance, price_after + tolerance)
+            ).first()
+
+            return alert is not None
+
     def get_recent_alerts(
         self,
         symbol: Optional[str] = None,
