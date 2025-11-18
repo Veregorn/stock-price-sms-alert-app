@@ -19,7 +19,9 @@ A modern, full-stack web application for monitoring multiple stock prices with r
 - **📈 Real-Time Price Updates**: Fetch live stock prices from Alpha Vantage API
 - **🖼️ Professional Images**: Beautiful stock images from Unsplash API with proper attribution
 - **📊 Interactive Price Charts**: Visual 30-day price trends with Chart.js
-- **💾 Persistent Storage**: SQLite database for stocks, prices, alerts, and news
+- **💾 Persistent Storage**: SQLite for local development, PostgreSQL for production
+- **🤖 Automated Scheduler**: Daily price updates at 18:00 UTC (after market close)
+- **🔘 Manual Updates**: One-click price refresh from dashboard for demos and testing
 
 ### 🖥️ Web Interface
 - **📱 Responsive Design**: Beautiful Tailwind CSS interface that works on all devices
@@ -39,6 +41,8 @@ A modern, full-stack web application for monitoring multiple stock prices with r
 - **🧪 Test Ready**: Modular structure designed for comprehensive testing
 - **🏗️ Modular Architecture**: Separation of concerns with clear boundaries
 - **🔄 CI/CD Ready**: GitHub Actions integration for automated testing
+- **⏰ APScheduler**: Background task scheduler for automated daily price updates
+- **🐘 PostgreSQL Ready**: Seamless transition from SQLite to PostgreSQL for production
 
 ## 🎬 Live Demo
 
@@ -59,6 +63,8 @@ Visit the application at `http://localhost:8000` after starting the server.
 ### Prerequisites
 
 - Python 3.7 or higher
+- SQLite (included with Python) for local development
+- PostgreSQL 12+ (optional, for production deployment)
 - Twilio account (free tier available) - **Required for WhatsApp/SMS notifications**
 - Alpha Vantage API key (free) - **Required for real-time stock prices**
 - News API key (free) - **Required for news articles**
@@ -102,7 +108,12 @@ Visit the application at `http://localhost:8000` after starting the server.
    MY_PHONE_NUMBER=+1234567890  # Your phone number with country code
 
    # Database Configuration
-   DATABASE_URL=sqlite:///./stock_monitor.db
+   # For local development (default):
+   DATABASE_URL=sqlite:///stock_monitor.db
+
+   # For production (PostgreSQL - Railway/Render will provide this automatically):
+   # DATABASE_URL=postgresql://user:password@host:port/database
+
    DATABASE_ECHO=False
    ```
 
@@ -122,7 +133,25 @@ Visit the application at `http://localhost:8000` after starting the server.
 
    API documentation available at: http://localhost:8000/api/docs
 
+**Note**: The application automatically starts a scheduler that updates stock prices daily at 18:00 UTC (after US market close). You can also manually trigger updates from the dashboard.
+
 ## 📋 Usage Guide
+
+### Updating Stock Prices
+
+The application provides two ways to update stock prices:
+
+1. **Automatic Daily Updates** (Production):
+   - Scheduler runs automatically at 18:00 UTC daily
+   - Updates all active stocks after US market close
+   - Creates alerts when thresholds are exceeded
+   - Check scheduler status at `/scheduler/status`
+
+2. **Manual Updates** (Demo/Testing):
+   - Go to Dashboard (`/dashboard`)
+   - Click "Update All Prices" button in the header
+   - All active stocks are updated immediately
+   - Useful for demos or when you need fresh data
 
 ### Managing Stocks via Web Interface
 
@@ -202,6 +231,7 @@ stock-price-sms-alert-app/
 │   │                             # All CRUD operations
 │   │
 │   ├── config.py                 # Centralized configuration
+│   ├── scheduler.py              # APScheduler for automated price updates
 │   ├── stock_fetcher.py          # Alpha Vantage API integration
 │   ├── news_fetcher.py           # News API integration
 │   ├── image_fetcher.py          # Unsplash API integration
@@ -376,6 +406,8 @@ This design ensures:
 - **[SQLAlchemy](https://www.sqlalchemy.org/)** (2.0.23) - SQL toolkit and ORM
 - **[Pydantic](https://docs.pydantic.dev/)** (2.5.0) - Data validation using type annotations
 - **[Uvicorn](https://www.uvicorn.org/)** (0.24.0) - Lightning-fast ASGI server
+- **[APScheduler](https://apscheduler.readthedocs.io/)** (3.10.4) - Background task scheduler
+- **[psycopg2-binary](https://pypi.org/project/psycopg2-binary/)** (2.9.9) - PostgreSQL database adapter
 - **[Python-dotenv](https://pypi.org/project/python-dotenv/)** (0.21.0) - Environment variable management
 
 ### Frontend
@@ -444,6 +476,12 @@ This design ensures:
 | `MY_PHONE_NUMBER` | Your phone number | Yes | - |
 | `DATABASE_URL` | Database connection string | No | `sqlite:///stock_monitor.db` |
 | `DATABASE_ECHO` | Log SQL queries (True/False) | No | `False` |
+
+**Database Configuration**:
+- **Local Development**: Use default SQLite (`sqlite:///stock_monitor.db`)
+- **Production (Railway/Render)**: Set to PostgreSQL connection string
+  - Format: `postgresql://user:password@host:port/database`
+  - Most platforms auto-inject this variable
 
 ### Application Settings (`src/config.py`)
 
@@ -570,8 +608,25 @@ Check the CI status badge at the top!
     - [x] Individual and batch notification endpoints
     - [x] Error handling and logging
 
+- [x] **Phase 5**: Deployment & Automation ✅
+  - [x] Manual price update button in dashboard
+    - [x] "Update All Prices" button with loading states
+    - [x] Toast notifications for success/error feedback
+    - [x] Instant updates for demos and testing
+  - [x] Automated scheduler implementation
+    - [x] APScheduler with daily cron trigger
+    - [x] Executes at 18:00 UTC (after US market close)
+    - [x] Background task processing
+    - [x] Scheduler status endpoint (`/scheduler/status`)
+  - [x] PostgreSQL production support
+    - [x] Conditional database engine configuration
+    - [x] SQLite for local development
+    - [x] PostgreSQL driver (`psycopg2-binary`)
+    - [x] Seamless dev-to-prod transition via DATABASE_URL
+
 ### 🔮 Future Enhancements
 
+- [ ] Cloud deployment (Railway, Render, Heroku)
 - [ ] User authentication and authorization
 - [ ] Multi-user support with portfolios
 - [ ] Real-time price updates (WebSockets)
@@ -581,9 +636,7 @@ Check the CI status badge at the top!
 - [ ] Price prediction with machine learning
 - [ ] Mobile app (React Native or Flutter)
 - [ ] Export data (CSV, Excel, PDF reports)
-- [ ] Scheduled monitoring with cron jobs
 - [ ] Docker containerization
-- [ ] Cloud deployment guides (AWS, Heroku, DigitalOcean)
 - [ ] GraphQL API alternative
 
 ## ⚠️ Disclaimer

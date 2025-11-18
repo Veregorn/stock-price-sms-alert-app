@@ -39,12 +39,16 @@ class DatabaseService:
         # Usar URL proporcionada o la de configuración
         self.database_url = database_url or config.DATABASE_URL
 
+        # Configurar engine según el tipo de base de datos
+        engine_kwargs = {"echo": config.DATABASE_ECHO}
+
+        # SQLite requiere check_same_thread=False para FastAPI
+        # PostgreSQL y otras bases de datos no necesitan este parámetro
+        if self.database_url.startswith("sqlite"):
+            engine_kwargs["connect_args"] = {"check_same_thread": False}
+
         # Crear engine de SQLAlchemy
-        # echo=False desactiva el logging de SQL (para producción)
-        self.engine = create_engine(
-            self.database_url,
-            echo=config.DATABASE_ECHO
-        )
+        self.engine = create_engine(self.database_url, **engine_kwargs)
 
         # Crear fábrica de sesiones
         # Las sesiones son la forma de interactuar con la BD en SQLAlchemy

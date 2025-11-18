@@ -49,6 +49,14 @@ Una vez que la API esté corriendo, puedes acceder a:
   - Información básica de la API
   - Enlaces a documentación
 
+### Scheduler Status
+
+- **GET** `/scheduler/status`
+  - Verifica el estado del scheduler automático
+  - Retorna horario de ejecución (Daily at 18:00 UTC)
+  - Muestra próxima ejecución programada
+  - Lista de jobs activos
+
 ### 📊 Stocks (CRUD Completo)
 
 #### Gestión de Stocks
@@ -203,6 +211,9 @@ curl http://localhost:8000/health
 # Root endpoint
 curl http://localhost:8000/
 
+# Scheduler status (verificar estado del scheduler automático)
+curl http://localhost:8000/scheduler/status
+
 # Listar todos los stocks
 curl http://localhost:8000/api/stocks
 
@@ -316,6 +327,12 @@ BASE_URL = "http://localhost:8000"
 # Health check
 response = requests.get(f"{BASE_URL}/health")
 print(response.json())
+
+# Scheduler status
+response = requests.get(f"{BASE_URL}/scheduler/status")
+scheduler_info = response.json()
+print(f"Scheduler: {scheduler_info['status']}")
+print(f"Schedule: {scheduler_info['schedule']}")
 
 # Listar stocks
 response = requests.get(f"{BASE_URL}/api/stocks")
@@ -490,6 +507,7 @@ Todos los endpoints de la API REST están implementados y funcionando:
 - ✅ Stock Updates (Alpha Vantage integration)
 - ✅ News Updates (News API + Unsplash integration)
 - ✅ Notifications (Twilio WhatsApp/SMS)
+- ✅ Scheduler Status (APScheduler monitoring)
 
 ## 🔮 Funcionalidades Completas
 
@@ -522,3 +540,10 @@ Todos los endpoints de la API REST están implementados y funcionando:
 - ✅ Detección de duplicados
 - ✅ Rate limiting awareness
 - ✅ Error handling robusto
+
+### Fase 5: Deployment & Automation ✅
+- ✅ Botón manual "Update All Prices" en dashboard
+- ✅ APScheduler con ejecución diaria a las 18:00 UTC
+- ✅ Endpoint `/scheduler/status` para monitoreo
+- ✅ Soporte PostgreSQL para producción
+- ✅ Transición SQLite → PostgreSQL vía DATABASE_URL
