@@ -98,12 +98,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Frontend local
-        "http://127.0.0.1:3000",
-        "http://localhost:8000",  # API local
-        "http://127.0.0.1:8000",
-    ],
+    allow_origins=["*"],  # Permitir todos los orígenes en producción
     allow_credentials=True,  # Permitir cookies
     allow_methods=["*"],  # Permitir todos los métodos (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Permitir todos los headers
