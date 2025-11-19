@@ -6,9 +6,9 @@ APScheduler==3.10.4  # Scheduler para tareas periódicas
 psycopg2==2.9.9  # PostgreSQL driver para producción (no usar binary en Render)
 
 # API Dependencies
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
 httpx==0.25.1  # Para TestClient de FastAPI
 jinja2==3.1.2  # Templates HTML
 aiofiles==22.1.0  # Para servir archivos estáticos de forma asíncrona
