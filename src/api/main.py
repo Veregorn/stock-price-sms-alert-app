@@ -8,7 +8,7 @@ configuraciones: CORS, middleware, rutas, scheduler automático, etc.
 import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,6 +16,7 @@ from fastapi.templating import Jinja2Templates
 from ..config import config
 from ..database.service import DatabaseService
 from ..scheduler import PriceUpdateScheduler, set_scheduler
+from .dependencies import get_db
 from .routers import stocks, prices, dashboard, alerts, news, pages, stock_updates, news_updates, notifications
 
 logger = logging.getLogger(__name__)
@@ -49,8 +50,14 @@ async def lifespan(app: FastAPI):
     logger.info("STARTING STOCK PRICE ALERT API")
     logger.info("=" * 70)
 
-    # Inicializar database service
+    # Inicializar database service y garantizar tablas
     db_service = DatabaseService()
+    try:
+        db_service.create_tables()
+        logger.info("✓ Database tables ensured/created")
+    except Exception as exc:
+        logger.error(f"Error ensuring database schema: {exc}")
+        raise
 
     # Inicializar y arrancar scheduler
     # Ejecutar diariamente a las 18:00 UTC (después del cierre de mercado US)
@@ -211,3 +218,28 @@ async def debug_env():
         "DATABASE_URL": "✓ Set" if os.getenv("DATABASE_URL") else "✗ Missing",
     }
     return env_vars
+
+
+@app.get("/debug/db", tags=["Debug"])
+async def debug_db(db: DatabaseService = Depends(get_db)):
+    """
+    Endpoint de debug para verificar conexión a base de datos.
+
+    IMPORTANTE: Eliminar antes de producción final.
+    """
+    try:
+        # Intentar obtener stocks para verificar que las tablas existen
+        stocks = db.get_all_stocks()
+        return {
+            "status": "✓ Connected",
+            "stocks_count": len(stocks),
+            "database_type": "PostgreSQL" if "postgresql" in config.DATABASE_URL else "SQLite",
+            "database_url_prefix": config.DATABASE_URL.split("://")[0] if "://" in config.DATABASE_URL else "unknown"
+        }
+    except Exception as e:
+        return {
+            "status": "✗ Error",
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "database_url_prefix": config.DATABASE_URL.split("://")[0] if "://" in config.DATABASE_URL else "unknown"
+        }
