@@ -8,7 +8,7 @@ configuraciones: CORS, middleware, rutas, scheduler automático, etc.
 import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -155,14 +155,28 @@ async def health_check():
 
 
 @app.get("/", tags=["Root"])
-async def root():
+async def root(request: Request):
     """
     Endpoint raíz - Redirige al dashboard.
 
     Redirige automáticamente a la página principal del dashboard.
     """
     from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/dashboard")
+
+    accept_header = request.headers.get("accept", "*/*")
+    wants_html = "text/html" in accept_header and "application/json" not in accept_header
+
+    if wants_html:
+        return RedirectResponse(url="/dashboard")
+
+    return {
+        "message": "Stock Price Alert API",
+        "version": app.version,
+        "docs": "/api/docs",
+        "redoc": "/api/redoc",
+        "health": "/health",
+        "dashboard": "/dashboard"
+    }
 
 
 @app.get("/scheduler/status", tags=["Scheduler"])
