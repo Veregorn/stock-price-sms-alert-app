@@ -3,7 +3,7 @@ python-dotenv==0.21.0
 twilio==9.0.5
 sqlalchemy==2.0.23
 APScheduler==3.10.4  # Scheduler para tareas periódicas
-psycopg2-binary==2.9.9  # PostgreSQL driver para producción
+psycopg2==2.9.9  # PostgreSQL driver para producción (no usar binary en Render)
 
 # API Dependencies
 fastapi==0.104.1
