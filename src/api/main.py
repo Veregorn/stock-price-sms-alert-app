@@ -150,17 +150,12 @@ async def health_check():
 @app.get("/", tags=["Root"])
 async def root():
     """
-    Endpoint raíz.
+    Endpoint raíz - Redirige al dashboard.
 
-    Proporciona información básica sobre la API y enlaces a la documentación.
+    Redirige automáticamente a la página principal del dashboard.
     """
-    return {
-        "message": "Stock Price Alert API",
-        "version": "1.0.0",
-        "docs": "/api/docs",
-        "redoc": "/api/redoc",
-        "health": "/health"
-    }
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/dashboard")
 
 
 @app.get("/scheduler/status", tags=["Scheduler"])
@@ -195,3 +190,24 @@ async def scheduler_status():
             for job in jobs
         ]
     }
+
+
+@app.get("/debug/env", tags=["Debug"])
+async def debug_env():
+    """
+    Endpoint de debug para verificar variables de entorno (sin mostrar valores).
+
+    IMPORTANTE: Eliminar antes de producción final.
+    """
+    import os
+    env_vars = {
+        "ALPHA_VANTAGE_API_KEY": "✓ Set" if os.getenv("ALPHA_VANTAGE_API_KEY") else "✗ Missing",
+        "NEWS_API_KEY": "✓ Set" if os.getenv("NEWS_API_KEY") else "✗ Missing",
+        "UNSPLASH_ACCESS_KEY": "✓ Set" if os.getenv("UNSPLASH_ACCESS_KEY") else "✗ Missing",
+        "TWILIO_ACCOUNT_SID": "✓ Set" if os.getenv("TWILIO_ACCOUNT_SID") else "✗ Missing",
+        "TWILIO_AUTH_TOKEN": "✓ Set" if os.getenv("TWILIO_AUTH_TOKEN") else "✗ Missing",
+        "TWILIO_PHONE_NUMBER": "✓ Set" if os.getenv("TWILIO_PHONE_NUMBER") else "✗ Missing",
+        "MY_PHONE_NUMBER": "✓ Set" if os.getenv("MY_PHONE_NUMBER") else "✗ Missing",
+        "DATABASE_URL": "✓ Set" if os.getenv("DATABASE_URL") else "✗ Missing",
+    }
+    return env_vars
