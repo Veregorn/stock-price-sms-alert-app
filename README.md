@@ -46,7 +46,7 @@ A modern, full-stack web application for monitoring multiple stock prices with r
 
 ## 🎬 Live Demo
 
-Visit the application at `http://localhost:8000` after starting the server.
+Visit the application at `https://stock-price-alert-fnrm.onrender.com`.
 
 ### Available Pages
 
@@ -626,7 +626,7 @@ Check the CI status badge at the top!
 
 ### 🔮 Future Enhancements
 
-- [ ] Cloud deployment (Railway, Render, Heroku)
+- [x] Cloud deployment (Railway, Render, Heroku)
 - [ ] User authentication and authorization
 - [ ] Multi-user support with portfolios
 - [ ] Real-time price updates (WebSockets)
