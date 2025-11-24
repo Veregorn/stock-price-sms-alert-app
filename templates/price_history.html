@@ -8,15 +8,15 @@
     <nav class="flex mb-4" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="/stocks" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600">
-                    <i class="fas fa-layer-group mr-2"></i>
+                <a href="/stocks" class="inline-flex items-center text-sm font-medium text-white hover:text-cyan-300">
+                    <i class="fas fa-layer-group mr-2 text-cyan-300"></i>
                     Stocks
                 </a>
             </li>
             <li>
                 <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                    <span class="text-sm font-medium text-gray-500">{{ symbol }} Price History</span>
+                    <i class="fas fa-chevron-right text-slate-500 mx-2"></i>
+                    <span class="text-sm font-medium text-slate-300">{{ symbol }} Price History</span>
                 </div>
             </li>
         </ol>
@@ -25,10 +25,10 @@
     <!-- Header with stock info -->
     <div class="flex justify-between items-start mb-6">
         <div>
-            <h2 class="text-3xl font-bold text-gray-900" id="stock-title">{{ symbol }}</h2>
-            <p class="text-gray-600 mt-1" id="company-name">Loading...</p>
+            <h2 class="text-3xl font-bold text-white" id="stock-title">{{ symbol }}</h2>
+            <p class="text-slate-400 mt-1" id="company-name">Loading...</p>
         </div>
-        <button onclick="openAddPriceModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors">
+        <button onclick="openAddPriceModal()" class="btn-outline">
             <i class="fas fa-plus mr-2"></i> Add Price
         </button>
     </div>
@@ -37,49 +37,49 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="price-stats">
         <!-- Stats will load dynamically -->
         <div class="animate-pulse">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="glass-panel overflow-hidden rounded-xl">
                 <div class="p-5">
-                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div class="h-8 bg-gray-200 rounded w-1/2"></div>
+                    <div class="h-4 bg-slate-800 rounded w-3/4 mb-2"></div>
+                    <div class="h-8 bg-slate-800 rounded w-1/2"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Time period filter -->
-    <div class="bg-white shadow rounded-lg mb-6">
+    <div class="glass-panel floating-card mb-6">
         <div class="px-4 py-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">
-                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                <h3 class="section-title">
+                    <span class="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_0_6px_rgba(34,211,238,0.15)]"></span>
                     Price History
                 </h3>
                 <div class="flex space-x-2">
                     <button onclick="changePeriod(7)" id="btn-7d" class="px-3 py-1 text-sm rounded-md bg-indigo-600 text-white">7D</button>
-                    <button onclick="changePeriod(30)" id="btn-30d" class="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100">30D</button>
-                    <button onclick="changePeriod(90)" id="btn-90d" class="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100">90D</button>
-                    <button onclick="changePeriod(0)" id="btn-all" class="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100">All</button>
+                    <button onclick="changePeriod(30)" id="btn-30d" class="px-3 py-1 text-sm rounded-md text-slate-200 hover:bg-white/10">30D</button>
+                    <button onclick="changePeriod(90)" id="btn-90d" class="px-3 py-1 text-sm rounded-md text-slate-200 hover:bg-white/10">90D</button>
+                    <button onclick="changePeriod(0)" id="btn-all" class="px-3 py-1 text-sm rounded-md text-slate-200 hover:bg-white/10">All</button>
                 </div>
             </div>
 
             <!-- Chart -->
-            <div class="relative" style="height: 400px;">
+            <div class="relative bg-black/30 rounded-lg border border-white/5" style="height: 400px;">
                 <canvas id="priceChart"></canvas>
             </div>
         </div>
     </div>
 
     <!-- Price history table -->
-    <div class="bg-white shadow rounded-lg">
+    <div class="glass-panel floating-card">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
-                <i class="fas fa-table text-green-500 mr-2"></i>
+            <h3 class="section-title mb-4">
+                <span class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(74,222,128,0.15)]"></span>
                 Recent Prices
             </h3>
             <div id="prices-table-container">
                 <!-- Table will load dynamically -->
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <div class="text-center py-8 text-slate-400">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 text-cyan-300"></i>
                     <p>Loading prices...</p>
                 </div>
             </div>
@@ -150,8 +150,8 @@
 
             if (!data || typeof data.close_price !== 'number') {
                 document.getElementById('price-stats').innerHTML = `
-                    <div class="col-span-3 text-center py-8 text-gray-500">
-                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <div class="col-span-3 text-center py-8 text-slate-400">
+                        <i class="fas fa-inbox text-4xl mb-2 text-white/30"></i>
                         <p>No price data available</p>
                     </div>
                 `;
@@ -175,39 +175,39 @@
                 : 'N/A';
 
             const statsHtml = `
-                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                <div class="glass-panel floating-card fade-in">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-dollar-sign text-green-500 text-2xl"></i>
+                                <i class="fas fa-dollar-sign text-emerald-300 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Current Price</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${formatCurrency(data.close_price)}</dd>
+                                    <dt class="text-sm font-medium text-slate-400 truncate">Current Price</dt>
+                                    <dd class="text-3xl font-semibold text-white">${formatCurrency(data.close_price)}</dd>
                                 </dl>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                <div class="glass-panel floating-card fade-in">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-history text-blue-500 text-2xl"></i>
+                                <i class="fas fa-history text-cyan-300 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Previous Price</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${previousPriceDisplay}</dd>
+                                    <dt class="text-sm font-medium text-slate-400 truncate">Previous Price</dt>
+                                    <dd class="text-3xl font-semibold text-white">${previousPriceDisplay}</dd>
                                 </dl>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                <div class="glass-panel floating-card fade-in">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
@@ -215,7 +215,7 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Change</dt>
+                                    <dt class="text-sm font-medium text-slate-400 truncate">Change</dt>
                                     <dd class="text-3xl font-semibold ${changeClass}">${percentageDisplay}</dd>
                                 </dl>
                             </div>
@@ -246,8 +246,8 @@
             if (!data || !data.prices || data.prices.length === 0) {
                 destroyChart();
                 document.querySelector('#priceChart').parentElement.innerHTML = `
-                    <div class="text-center py-16 text-gray-500">
-                        <i class="fas fa-chart-line text-4xl mb-2"></i>
+                    <div class="text-center py-16 text-slate-400">
+                        <i class="fas fa-chart-line text-4xl mb-2 text-white/30"></i>
                         <p>No price data available for this period</p>
                     </div>
                 `;
@@ -341,8 +341,8 @@
 
             if (!data || !data.prices || data.prices.length === 0) {
                 document.getElementById('prices-table-container').innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fas fa-inbox text-4xl mb-2 text-white/30"></i>
                         <p>No price records available</p>
                     </div>
                 `;
@@ -350,19 +350,19 @@
             }
 
             const tableHtml = `
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto scrollbar-thin">
+                    <table class="min-w-full table-dark divide-y divide-white/5">
+                        <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date & Time</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Change</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="divide-y divide-white/5">
                             ${data.prices.map((price, index) => {
                                 const nextPrice = data.prices[index + 1];
-                                let changeHtml = '<span class="text-gray-500">-</span>';
+                                let changeHtml = '<span class="text-slate-500">-</span>';
 
                                 if (nextPrice) {
                                     const change = ((price.close_price - nextPrice.close_price) / nextPrice.close_price) * 100;
@@ -372,11 +372,11 @@
                                 }
 
                                 return `
-                                    <tr class="hover:bg-gray-50 fade-in">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <tr class="hover:bg-white/5 fade-in">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-white">
                                             ${formatDate(price.date)}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-white">
                                             ${formatCurrency(price.close_price)}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">

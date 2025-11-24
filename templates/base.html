@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,8 +17,64 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Futuristic font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Custom styles -->
     <style>
+        :root {
+            --bg-1: #050915;
+            --bg-2: #030712;
+            --panel: rgba(10, 14, 26, 0.75);
+            --panel-strong: rgba(10, 14, 26, 0.92);
+            --border: rgba(94, 234, 212, 0.2);
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #22d3ee;
+            --accent-2: #a855f7;
+            --warm: #fbbf24;
+        }
+
+        html, body {
+            color: var(--text);
+            background: radial-gradient(120% 120% at 20% 20%, rgba(34,211,238,0.12), transparent 50%),
+                        radial-gradient(120% 120% at 80% 0%, rgba(168,85,247,0.14), transparent 50%),
+                        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-1) 100%);
+            font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-shell::before,
+        .app-shell::after {
+            content: '';
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            border-radius: 9999px;
+            filter: blur(100px);
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        .app-shell::before {
+            background: rgba(34, 211, 238, 0.3);
+            top: -80px;
+            left: -120px;
+        }
+
+        .app-shell::after {
+            background: rgba(168, 85, 247, 0.25);
+            bottom: -140px;
+            right: -120px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -28,70 +84,281 @@
             animation: fadeIn 0.3s ease-out;
         }
 
+        .glass-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(34, 211, 238, 0.08);
+            backdrop-filter: blur(14px);
+        }
+
+        .glass-strong {
+            background: var(--panel-strong);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .nav-link {
+            color: var(--muted);
+            font-weight: 500;
+            padding: 0.65rem 0.9rem;
+            border-radius: 9999px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: #e0f2fe;
+            border-color: rgba(94, 234, 212, 0.25);
+            background: rgba(34, 211, 238, 0.08);
+        }
+
+        .nav-link-active {
+            color: #e0f2fe;
+            border-color: rgba(94, 234, 212, 0.35);
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(168, 85, 247, 0.15));
+            box-shadow: 0 10px 30px rgba(34, 211, 238, 0.2);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            background: linear-gradient(135deg, #22d3ee, #a855f7);
+            box-shadow: 0 12px 30px rgba(34, 211, 238, 0.3);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 40px rgba(168, 85, 247, 0.35);
+            filter: brightness(1.05);
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            border: 1.4px solid rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-outline i {
+            color: #22d3ee;
+            transition: color 0.2s ease, transform 0.15s ease;
+        }
+
+        .btn-outline:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(34, 211, 238, 0.8);
+            box-shadow: 0 12px 30px rgba(34, 211, 238, 0.2);
+        }
+
+        .btn-outline:hover i {
+            color: #a855f7;
+            transform: rotate(8deg);
+        }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.75rem 1.1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .btn-ghost:hover {
+            border-color: rgba(94, 234, 212, 0.35);
+            color: #e0f2fe;
+            background: rgba(34, 211, 238, 0.06);
+        }
+
         .badge-success {
-            @apply bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded;
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .badge-danger {
-            @apply bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded;
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .badge-warning {
-            @apply bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded;
+            background: rgba(251, 191, 36, 0.12);
+            color: #facc15;
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .badge-info {
-            @apply bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded;
+            background: rgba(14, 165, 233, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(14, 165, 233, 0.25);
+            padding: 0.2rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .input-dark {
+            background: #0b1225;
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .input-dark:focus {
+            border-color: rgba(34, 211, 238, 0.45);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+            outline: none;
+        }
+
+        .table-dark {
+            background: var(--panel-strong);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .table-dark thead {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table-dark th {
+            color: var(--muted);
+            font-size: 0.75rem;
+            letter-spacing: 0.03em;
+        }
+
+        .table-dark td, .table-dark th {
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .section-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.1rem;
+            color: #e0f2fe;
+            letter-spacing: 0.01em;
+        }
+
+        .gradient-title {
+            background: linear-gradient(120deg, #22d3ee, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .floating-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .floating-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.35), 0 0 30px rgba(168, 85, 247, 0.12);
+        }
+
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: rgba(94, 234, 212, 0.3);
         }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full">
-    <div class="min-h-full">
+    <div class="app-shell">
         <!-- Navigation -->
-        <nav class="bg-indigo-600 shadow-lg">
+        <nav class="sticky top-0 z-50 backdrop-blur-xl bg-black/30 border-b border-white/5">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-400/30 via-indigo-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                            <i class="fas fa-chart-line text-cyan-300 text-xl"></i>
                         </div>
-                        <div class="ml-4">
-                            <h1 class="text-white text-xl font-bold">Stock Price Alert</h1>
+                        <div>
+                            <h1 class="text-white text-lg font-semibold tracking-tight">Stock Price Alert</h1>
+                            <p class="text-xs text-slate-400">Realtime signals · SMS & Web</p>
                         </div>
                     </div>
 
                     <!-- Desktop navigation menu -->
                     <div class="hidden md:block">
-                        <div class="ml-10 flex items-baseline space-x-4">
+                        <div class="ml-10 flex items-center space-x-2">
                             <a href="/dashboard"
-                               class="{% if page == 'dashboard' %}bg-indigo-700 text-white{% else %}text-indigo-100 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium transition-colors">
-                                <i class="fas fa-home mr-1"></i> Dashboard
+                               class="nav-link {% if page == 'dashboard' %}nav-link-active{% endif %}">
+                                <i class="fas fa-home mr-2"></i> Dashboard
                             </a>
                             <a href="/stocks"
-                               class="{% if page == 'stocks' %}bg-indigo-700 text-white{% else %}text-indigo-100 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium transition-colors">
-                                <i class="fas fa-layer-group mr-1"></i> Stocks
+                               class="nav-link {% if page == 'stocks' %}nav-link-active{% endif %}">
+                                <i class="fas fa-layer-group mr-2"></i> Stocks
                             </a>
                             <a href="/alerts"
-                               class="{% if page == 'alerts' %}bg-indigo-700 text-white{% else %}text-indigo-100 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium transition-colors">
-                                <i class="fas fa-bell mr-1"></i> Alerts
+                               class="nav-link {% if page == 'alerts' %}nav-link-active{% endif %}">
+                                <i class="fas fa-bell mr-2"></i> Alerts
                             </a>
                             <a href="/news"
-                               class="{% if page == 'news' %}bg-indigo-700 text-white{% else %}text-indigo-100 hover:bg-indigo-500 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium transition-colors">
-                                <i class="fas fa-newspaper mr-1"></i> News
+                               class="nav-link {% if page == 'news' %}nav-link-active{% endif %}">
+                                <i class="fas fa-newspaper mr-2"></i> News
                             </a>
-                            <a href="/api/docs"
-                               class="text-indigo-100 hover:bg-indigo-500 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                               target="_blank">
-                                <i class="fas fa-code mr-1"></i> API Docs
+                            <a href="/api/docs" target="_blank" class="btn-ghost">
+                                <i class="fas fa-code"></i> API Docs
                             </a>
                         </div>
                     </div>
 
                     <!-- Mobile menu button -->
                     <div class="-mr-2 flex md:hidden" x-data="{ open: false }">
-                        <button @click="open = !open" type="button" class="inline-flex items-center justify-center rounded-md bg-indigo-600 p-2 text-indigo-200 hover:bg-indigo-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600">
+                        <button @click="open = !open" type="button" class="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-slate-100 hover:border-cyan-300/40 focus:outline-none focus:ring-2 focus:ring-cyan-400/60">
                             <span class="sr-only">Open main menu</span>
                             <i class="fas fa-bars" x-show="!open"></i>
                             <i class="fas fa-times" x-show="open"></i>
@@ -105,22 +372,22 @@
                              x-transition:leave="transition ease-in duration-75 transform"
                              x-transition:leave-start="opacity-100 scale-100"
                              x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute top-16 right-4 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+                             class="absolute top-16 right-4 w-52 glass-panel shadow-2xl py-1 z-50"
                              @click.away="open = false">
-                            <a href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-home mr-2"></i> Dashboard
+                            <a href="/dashboard" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                                <i class="fas fa-home mr-2 text-cyan-300"></i> Dashboard
                             </a>
-                            <a href="/stocks" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-layer-group mr-2"></i> Stocks
+                            <a href="/stocks" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                                <i class="fas fa-layer-group mr-2 text-cyan-300"></i> Stocks
                             </a>
-                            <a href="/alerts" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-bell mr-2"></i> Alerts
+                            <a href="/alerts" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                                <i class="fas fa-bell mr-2 text-cyan-300"></i> Alerts
                             </a>
-                            <a href="/news" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-newspaper mr-2"></i> News
+                            <a href="/news" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                                <i class="fas fa-newspaper mr-2 text-cyan-300"></i> News
                             </a>
-                            <a href="/api/docs" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" target="_blank">
-                                <i class="fas fa-code mr-2"></i> API Docs
+                            <a href="/api/docs" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg" target="_blank">
+                                <i class="fas fa-code mr-2 text-cyan-300"></i> API Docs
                             </a>
                         </div>
                     </div>
@@ -129,25 +396,23 @@
         </nav>
 
         <!-- Main content -->
-        <main>
-            <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+        <main class="relative z-10">
+            <div class="mx-auto max-w-7xl py-10 sm:px-6 lg:px-8 px-4">
                 {% block content %}{% endblock %}
             </div>
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white shadow mt-8">
-            <div class="mx-auto max-w-7xl py-4 px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center">
-                    <p class="text-sm text-gray-500">
-                        Stock Price Alert System &copy; 2025
-                    </p>
-                    <div class="flex space-x-4 text-sm text-gray-500">
-                        <a href="/api/docs" target="_blank" class="hover:text-indigo-600">
-                            <i class="fas fa-book mr-1"></i> API Documentation
+        <footer class="mt-12">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8">
+                <div class="glass-panel px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
+                    <p>Stock Price Alert System · 2025</p>
+                    <div class="flex space-x-4 mt-3 sm:mt-0">
+                        <a href="/api/docs" target="_blank" class="hover:text-cyan-300">
+                            <i class="fas fa-book mr-1"></i> API Docs
                         </a>
-                        <a href="/health" target="_blank" class="hover:text-indigo-600">
-                            <i class="fas fa-heartbeat mr-1"></i> Health Check
+                        <a href="/health" target="_blank" class="hover:text-cyan-300">
+                            <i class="fas fa-heartbeat mr-1"></i> Health
                         </a>
                     </div>
                 </div>
@@ -225,7 +490,6 @@
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', {
-                year: 'numeric',
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',

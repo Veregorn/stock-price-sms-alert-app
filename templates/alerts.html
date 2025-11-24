@@ -3,15 +3,18 @@
 {% block title %}Alerts - Stock Price Alert{% endblock %}
 
 {% block content %}
-<div class="px-4 sm:px-0">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-3xl font-bold text-gray-900">Price Alerts</h2>
+<div class="space-y-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <p class="text-sm uppercase tracking-[0.3em] text-slate-400">Signal stream</p>
+            <h2 class="text-3xl font-semibold text-white leading-tight">Price Alerts</h2>
+        </div>
 
         <!-- Filter by time period -->
-        <div class="flex items-center space-x-2">
-            <label for="days-filter" class="text-sm font-medium text-gray-700">Show alerts from:</label>
+        <div class="flex items-center space-x-2 glass-panel px-3 py-2 rounded-xl">
+            <label for="days-filter" class="text-sm font-medium text-slate-200">Show alerts from:</label>
             <select id="days-filter" onchange="changeDaysFilter(this.value)"
-                    class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    class="px-3 py-2 rounded-lg input-dark">
                 <option value="7">Last 7 days</option>
                 <option value="30" selected>Last 30 days</option>
                 <option value="90">Last 90 days</option>
@@ -21,29 +24,29 @@
     </div>
 
     <!-- Summary cards -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8" id="summary-container">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-3" id="summary-container">
         <!-- Summary will load dynamically -->
         <div class="animate-pulse">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="glass-panel overflow-hidden rounded-xl">
                 <div class="p-5">
-                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div class="h-8 bg-gray-200 rounded w-1/2"></div>
+                    <div class="h-4 bg-slate-800 rounded w-3/4 mb-2"></div>
+                    <div class="h-8 bg-slate-800 rounded w-1/2"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Alerts list -->
-    <div class="bg-white shadow rounded-lg">
+    <div class="glass-panel floating-card">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">
-                <i class="fas fa-bell text-yellow-500 mr-2"></i>
+            <h3 class="section-title mb-4">
+                <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_0_6px_rgba(251,191,36,0.15)]"></span>
                 Alert History
             </h3>
             <div id="alerts-container">
                 <!-- Alerts will load dynamically -->
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <div class="text-center py-8 text-slate-400">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 text-cyan-300"></i>
                     <p>Loading alerts...</p>
                 </div>
             </div>
@@ -64,8 +67,8 @@
 
             if (!data || !data.alerts) {
                 document.getElementById('summary-container').innerHTML = `
-                    <div class="col-span-3 bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p class="text-red-800 text-center">
+                    <div class="col-span-3 bg-rose-900/30 border border-rose-500/30 rounded-lg p-4">
+                        <p class="text-rose-100 text-center">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
                             Error loading alert statistics
                         </p>
@@ -79,48 +82,48 @@
             const decreaseAlerts = data.alerts.filter(a => a.percentage_change < 0).length;
 
             const summaryHtml = `
-                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                <div class="glass-panel floating-card fade-in">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-bell text-yellow-500 text-2xl"></i>
+                                <i class="fas fa-bell text-amber-300 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Alerts</dt>
-                                    <dd class="text-3xl font-semibold text-gray-900">${totalAlerts}</dd>
+                                    <dt class="text-sm font-medium text-slate-400 truncate">Total Alerts</dt>
+                                    <dd class="text-3xl font-semibold text-white">${totalAlerts}</dd>
                                 </dl>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                <div class="glass-panel floating-card fade-in">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-arrow-up text-green-500 text-2xl"></i>
+                                <i class="fas fa-arrow-up text-emerald-300 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Price Increases</dt>
-                                    <dd class="text-3xl font-semibold text-green-600">${increaseAlerts}</dd>
+                                    <dt class="text-sm font-medium text-slate-400 truncate">Price Increases</dt>
+                                    <dd class="text-3xl font-semibold text-emerald-300">${increaseAlerts}</dd>
                                 </dl>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg fade-in">
+                <div class="glass-panel floating-card fade-in">
                     <div class="p-5">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-arrow-down text-red-500 text-2xl"></i>
+                                <i class="fas fa-arrow-down text-rose-300 text-2xl"></i>
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Price Decreases</dt>
-                                    <dd class="text-3xl font-semibold text-red-600">${decreaseAlerts}</dd>
+                                    <dt class="text-sm font-medium text-slate-400 truncate">Price Decreases</dt>
+                                    <dd class="text-3xl font-semibold text-rose-300">${decreaseAlerts}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -131,8 +134,8 @@
             document.getElementById('summary-container').innerHTML = summaryHtml;
         } catch (error) {
             document.getElementById('summary-container').innerHTML = `
-                <div class="col-span-3 bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p class="text-red-800 text-center">
+                <div class="col-span-3 bg-rose-900/30 border border-rose-500/30 rounded-lg p-4">
+                    <p class="text-rose-100 text-center">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
                         Error loading alert statistics
                     </p>
@@ -149,8 +152,8 @@
 
             if (!data || !data.alerts || data.alerts.length === 0) {
                 document.getElementById('alerts-container').innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fas fa-inbox text-4xl mb-2 text-white/30"></i>
                         <p>No alerts found for the selected period</p>
                     </div>
                 `;
@@ -171,8 +174,8 @@
                 }
 
                 const symbol = stocksMap[alert.stock_id] || 'UNKNOWN';
-                const changeClass = alert.percentage_change >= 0 ? 'text-green-600' : 'text-red-600';
-                const bgClass = alert.percentage_change >= 0 ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50';
+                const changeClass = alert.percentage_change >= 0 ? 'text-emerald-300' : 'text-rose-300';
+                const bgClass = alert.percentage_change >= 0 ? 'border-emerald-400 bg-emerald-900/10' : 'border-rose-400 bg-rose-900/10';
                 const icon = alert.percentage_change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
                 const direction = alert.percentage_change >= 0 ? 'increased' : 'decreased';
 
@@ -182,7 +185,7 @@
                             <div class="flex-1">
                                 <div class="flex items-center mb-2">
                                     <a href="/stocks/${symbol}/prices"
-                                       class="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
+                                       class="text-lg font-semibold text-white hover:text-cyan-300 transition-colors">
                                         ${symbol}
                                     </a>
                                     <span class="ml-3 ${changeClass} font-bold">
@@ -190,14 +193,14 @@
                                         ${formatPercentage(alert.percentage_change)}
                                     </span>
                                 </div>
-                                <p class="text-sm text-gray-600 mb-1">
+                                <p class="text-sm text-slate-400 mb-1">
                                     <i class="fas fa-clock mr-1"></i>
                                     ${formatDate(alert.triggered_at)}
                                 </p>
-                                <p class="text-sm text-gray-700">
+                                <p class="text-sm text-slate-200">
                                     Price ${direction} from ${formatCurrency(alert.price_before)} to ${formatCurrency(alert.price_after)}
                                 </p>
-                                <p class="text-xs text-gray-500 mt-1">
+                                <p class="text-xs text-slate-400 mt-1">
                                     Alert threshold: ${alert.threshold_at_time}%
                                 </p>
                             </div>
@@ -214,8 +217,8 @@
             // If no valid alerts after filtering
             if (alertsHtml === '') {
                 document.getElementById('alerts-container').innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fas fa-inbox text-4xl mb-2 text-white/30"></i>
                         <p>No valid alerts to display</p>
                     </div>
                 `;
@@ -225,8 +228,8 @@
             document.getElementById('alerts-container').innerHTML = alertsHtml;
         } catch (error) {
             document.getElementById('alerts-container').innerHTML = `
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p class="text-red-800 text-center">
+                <div class="bg-rose-900/30 border border-rose-500/30 rounded-lg p-4">
+                    <p class="text-rose-100 text-center">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
                         Error loading alerts
                     </p>
