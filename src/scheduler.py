@@ -69,6 +69,15 @@ class PriceUpdateScheduler:
             replace_existing=True
         )
 
+        # Añadir job de actualización de noticias (diario a las 08:00 UTC)
+        self.scheduler.add_job(
+            func=self._update_all_news_job,
+            trigger=CronTrigger(hour=8, minute=0, timezone="UTC"),
+            id='update_stock_news',
+            name='Update all stock news',
+            replace_existing=True
+        )
+
         self.scheduler.start()
         logger.info(f"Scheduler started - will update prices daily at {self.hour:02d}:{self.minute:02d} UTC")
 
@@ -178,6 +187,132 @@ class PriceUpdateScheduler:
 
         except Exception as e:
             logger.error(f"Error in scheduled price update: {str(e)}", exc_info=True)
+
+    def _update_all_news_job(self):
+        """
+        Job que actualiza noticias de todos los stocks activos.
+        
+        Esta función se ejecuta periódicamente (diariamente a las 08:00 UTC).
+        Obtiene noticias recientes para cada stock activo y las guarda en la base de datos.
+        """
+        try:
+            logger.info("=" * 70)
+            logger.info(f"SCHEDULED NEWS UPDATE - {datetime.utcnow().isoformat()}")
+            logger.info("=" * 70)
+
+            # Obtener stocks activos
+            stocks = self.db_service.get_all_stocks(only_active=True)
+
+            if not stocks:
+                logger.info("No active stocks to update news for")
+                return
+
+            logger.info(f"Updating news for {len(stocks)} active stocks")
+
+            # Inicializar fetchers
+            from .news_fetcher import NewsFetcher
+            from .image_fetcher import ImageFetcher
+            
+            news_fetcher = NewsFetcher()
+            image_fetcher = ImageFetcher()
+
+            updated = 0
+            failed = 0
+            total_saved = 0
+
+            # Actualizar cada stock
+            for stock in stocks:
+                try:
+                    # Obtener noticias (limit 5 por stock para no saturar API)
+                    articles = news_fetcher.get_articles(stock.company_name, limit=5)
+                    
+                    if not articles:
+                        logger.info(f"No news found for {stock.symbol}")
+                        continue
+
+                    saved_count = 0
+                    
+                    for article in articles:
+                        try:
+                            title = article.get("title")
+                            if not title:
+                                continue
+
+                            url = article.get("url")
+                            
+                            # Verificar duplicados por URL
+                            if url and self.db_service.has_news_article_by_url(stock.symbol, url):
+                                continue
+
+                            # Parsear fecha
+                            published_at_str = article.get("publishedAt")
+                            published_at = None
+                            if published_at_str:
+                                try:
+                                    published_at = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
+                                except:
+                                    pass
+
+                            # Obtener imagen fallback si es necesario
+                            image_url = article.get("urlToImage")
+                            photographer_name = None
+                            photographer_username = None
+                            photographer_url = None
+                            unsplash_download_location = None
+
+                            if not image_url:
+                                unsplash_data = image_fetcher.get_fallback_image(stock.company_name)
+                                if unsplash_data:
+                                    image_url = unsplash_data["image_url"]
+                                    photographer_name = unsplash_data["photographer_name"]
+                                    photographer_username = unsplash_data["photographer_username"]
+                                    photographer_url = unsplash_data["photographer_url"]
+                                    unsplash_download_location = unsplash_data["download_location"]
+                                    
+                                    # Trigger download event
+                                    image_fetcher.trigger_download(unsplash_download_location)
+
+                            # Guardar en BD
+                            saved_article = self.db_service.save_news_article(
+                                symbol=stock.symbol,
+                                title=title,
+                                description=article.get("description"),
+                                url=url,
+                                image_url=image_url,
+                                source=article.get("source", {}).get("name"),
+                                published_at=published_at,
+                                photographer_name=photographer_name,
+                                photographer_username=photographer_username,
+                                photographer_url=photographer_url,
+                                unsplash_download_location=unsplash_download_location
+                            )
+
+                            if saved_article:
+                                saved_count += 1
+
+                        except Exception as e:
+                            logger.error(f"Error saving article for {stock.symbol}: {str(e)}")
+                            continue
+                    
+                    if saved_count > 0:
+                        logger.info(f"✓ {stock.symbol}: Saved {saved_count} new articles")
+                        updated += 1
+                        total_saved += saved_count
+                    else:
+                        logger.info(f"- {stock.symbol}: No new articles")
+
+                except Exception as e:
+                    logger.error(f"Error updating news for {stock.symbol}: {str(e)}")
+                    failed += 1
+                    continue
+
+            # Log resumen
+            logger.info("=" * 70)
+            logger.info(f"NEWS UPDATE COMPLETE - Updated: {updated}, Failed: {failed}, Total Saved: {total_saved}")
+            logger.info("=" * 70)
+
+        except Exception as e:
+            logger.error(f"Error in scheduled news update: {str(e)}", exc_info=True)
 
 
 # Instancia global del scheduler (se inicializa en startup de FastAPI)
