@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,8 @@
     <!-- Futuristic font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Custom styles -->
     <style>
@@ -37,11 +39,12 @@
             --warm: #fbbf24;
         }
 
-        html, body {
+        html,
+        body {
             color: var(--text);
-            background: radial-gradient(120% 120% at 20% 20%, rgba(34,211,238,0.12), transparent 50%),
-                        radial-gradient(120% 120% at 80% 0%, rgba(168,85,247,0.14), transparent 50%),
-                        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-1) 100%);
+            background: radial-gradient(120% 120% at 20% 20%, rgba(34, 211, 238, 0.12), transparent 50%),
+                radial-gradient(120% 120% at 80% 0%, rgba(168, 85, 247, 0.14), transparent 50%),
+                linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-1) 100%);
             background-attachment: fixed;
             background-repeat: no-repeat;
             font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
@@ -78,8 +81,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .fade-in {
@@ -270,7 +280,8 @@
             letter-spacing: 0.03em;
         }
 
-        .table-dark td, .table-dark th {
+        .table-dark td,
+        .table-dark th {
             border-color: rgba(255, 255, 255, 0.04);
         }
 
@@ -286,6 +297,7 @@
         .gradient-title {
             background: linear-gradient(120deg, #22d3ee, #a855f7);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -306,10 +318,12 @@
             width: 8px;
             height: 8px;
         }
+
         .scrollbar-thin::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 9999px;
         }
+
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
             background: rgba(94, 234, 212, 0.3);
         }
@@ -317,6 +331,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="h-full">
     <div class="app-shell">
         <!-- Navigation -->
@@ -324,7 +339,8 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-400/30 via-indigo-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <div
+                            class="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-400/30 via-indigo-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                             <i class="fas fa-chart-line text-cyan-300 text-xl"></i>
                         </div>
                         <div>
@@ -337,19 +353,16 @@
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-center space-x-2">
                             <a href="/dashboard"
-                               class="nav-link {% if page == 'dashboard' %}nav-link-active{% endif %}">
+                                class="nav-link {% if page == 'dashboard' %}nav-link-active{% endif %}">
                                 <i class="fas fa-home mr-2"></i> Dashboard
                             </a>
-                            <a href="/stocks"
-                               class="nav-link {% if page == 'stocks' %}nav-link-active{% endif %}">
+                            <a href="/stocks" class="nav-link {% if page == 'stocks' %}nav-link-active{% endif %}">
                                 <i class="fas fa-layer-group mr-2"></i> Stocks
                             </a>
-                            <a href="/alerts"
-                               class="nav-link {% if page == 'alerts' %}nav-link-active{% endif %}">
+                            <a href="/alerts" class="nav-link {% if page == 'alerts' %}nav-link-active{% endif %}">
                                 <i class="fas fa-bell mr-2"></i> Alerts
                             </a>
-                            <a href="/news"
-                               class="nav-link {% if page == 'news' %}nav-link-active{% endif %}">
+                            <a href="/news" class="nav-link {% if page == 'news' %}nav-link-active{% endif %}">
                                 <i class="fas fa-newspaper mr-2"></i> News
                             </a>
                             <a href="/api/docs" target="_blank" class="btn-ghost">
@@ -360,35 +373,38 @@
 
                     <!-- Mobile menu button -->
                     <div class="-mr-2 flex md:hidden" x-data="{ open: false }">
-                        <button @click="open = !open" type="button" class="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-slate-100 hover:border-cyan-300/40 focus:outline-none focus:ring-2 focus:ring-cyan-400/60">
+                        <button @click="open = !open" type="button"
+                            class="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-slate-100 hover:border-cyan-300/40 focus:outline-none focus:ring-2 focus:ring-cyan-400/60">
                             <span class="sr-only">Open main menu</span>
                             <i class="fas fa-bars" x-show="!open"></i>
                             <i class="fas fa-times" x-show="open"></i>
                         </button>
 
                         <!-- Mobile menu dropdown -->
-                        <div x-show="open"
-                             x-transition:enter="transition ease-out duration-100 transform"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75 transform"
-                             x-transition:leave-start="opacity-100 scale-100"
-                             x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute top-16 right-4 w-52 glass-panel shadow-2xl py-1 z-50"
-                             @click.away="open = false">
-                            <a href="/dashboard" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                        <div x-show="open" x-transition:enter="transition ease-out duration-100 transform"
+                            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75 transform"
+                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute top-16 right-4 w-52 glass-panel shadow-2xl py-1 z-50"
+                            @click.away="open = false">
+                            <a href="/dashboard"
+                                class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
                                 <i class="fas fa-home mr-2 text-cyan-300"></i> Dashboard
                             </a>
-                            <a href="/stocks" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                            <a href="/stocks"
+                                class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
                                 <i class="fas fa-layer-group mr-2 text-cyan-300"></i> Stocks
                             </a>
-                            <a href="/alerts" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
+                            <a href="/alerts"
+                                class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
                                 <i class="fas fa-bell mr-2 text-cyan-300"></i> Alerts
                             </a>
                             <a href="/news" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg">
                                 <i class="fas fa-newspaper mr-2 text-cyan-300"></i> News
                             </a>
-                            <a href="/api/docs" class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg" target="_blank">
+                            <a href="/api/docs"
+                                class="block px-4 py-2 text-sm text-slate-200 hover:bg-white/5 rounded-lg"
+                                target="_blank">
                                 <i class="fas fa-code mr-2 text-cyan-300"></i> API Docs
                             </a>
                         </div>
@@ -405,9 +421,10 @@
         </main>
 
         <!-- Footer -->
-        <footer class="mt-12">
+        <footer class="mt-12 relative z-10">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8">
-                <div class="glass-panel px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
+                <div
+                    class="glass-panel px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
                     <p>Stock Price Alert System · 2025</p>
                     <div class="flex space-x-4 mt-3 sm:mt-0">
                         <a href="/api/docs" target="_blank" class="hover:text-cyan-300">
@@ -415,6 +432,9 @@
                         </a>
                         <a href="/health" target="_blank" class="hover:text-cyan-300">
                             <i class="fas fa-heartbeat mr-1"></i> Health
+                        </a>
+                        <a href="https://github.com/Veregorn" target="_blank" class="hover:text-cyan-300">
+                            <i class="fab fa-github mr-1"></i> GitHub
                         </a>
                     </div>
                 </div>
@@ -516,4 +536,5 @@
 
     {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>

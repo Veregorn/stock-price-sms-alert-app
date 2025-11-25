@@ -55,8 +55,9 @@ coverage.xml
 *.cover
 
 # Project specific
-data/*.db
-data/*.sqlite
+*.db
+*.sqlite
+*.sqlite3
 *.csv.backup
 
 # IA
