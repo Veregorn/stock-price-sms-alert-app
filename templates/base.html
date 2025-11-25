@@ -42,7 +42,11 @@
         html,
         body {
             color: var(--text);
+            background-color: var(--bg-1);
+            /* Fix for Safari overscroll */
             font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         .fixed-bg {
@@ -51,11 +55,14 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: -1;
+            z-index: 0;
+            /* Changed from -1 to 0 to be safe, content is z-10+ */
             background: radial-gradient(120% 120% at 20% 20%, rgba(34, 211, 238, 0.12), transparent 50%),
                 radial-gradient(120% 120% at 80% 0%, rgba(168, 85, 247, 0.14), transparent 50%),
                 linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-1) 100%);
             background-repeat: no-repeat;
+            pointer-events: none;
+            /* Ensure clicks pass through */
         }
 
         .app-shell {

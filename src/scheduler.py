@@ -172,6 +172,66 @@ class PriceUpdateScheduler:
                                 f"(threshold: {stock.threshold}%)"
                             )
                             alerts_triggered += 1
+
+                            # Trigger immediate news update
+                            try:
+                                logger.info(f"Fetching news for {stock.symbol} due to alert...")
+                                from .news_fetcher import NewsFetcher
+                                from .image_fetcher import ImageFetcher
+                                
+                                nf = NewsFetcher()
+                                img_f = ImageFetcher()
+                                
+                                articles = nf.get_articles(stock.company_name, limit=3)
+                                if articles:
+                                    saved_news = 0
+                                    for article in articles:
+                                        try:
+                                            # Skip if no title
+                                            if not article.get("title"): continue
+                                            
+                                            # Check duplicate
+                                            if article.get("url") and self.db_service.has_news_article_by_url(stock.symbol, article.get("url")):
+                                                continue
+
+                                            # Get image if needed
+                                            image_url = article.get("urlToImage")
+                                            photographer_name = None
+                                            photographer_username = None
+                                            photographer_url = None
+                                            unsplash_download_location = None
+
+                                            if not image_url:
+                                                unsplash_data = img_f.get_fallback_image(stock.company_name)
+                                                if unsplash_data:
+                                                    image_url = unsplash_data["image_url"]
+                                                    photographer_name = unsplash_data["photographer_name"]
+                                                    photographer_username = unsplash_data["photographer_username"]
+                                                    photographer_url = unsplash_data["photographer_url"]
+                                                    unsplash_download_location = unsplash_data["download_location"]
+                                                    img_f.trigger_download(unsplash_download_location)
+
+                                            # Save
+                                            self.db_service.save_news_article(
+                                                symbol=stock.symbol,
+                                                title=article.get("title"),
+                                                description=article.get("description"),
+                                                url=article.get("url"),
+                                                image_url=image_url,
+                                                source=article.get("source", {}).get("name"),
+                                                published_at=datetime.fromisoformat(article.get("publishedAt").replace('Z', '+00:00')) if article.get("publishedAt") else None,
+                                                photographer_name=photographer_name,
+                                                photographer_username=photographer_username,
+                                                photographer_url=photographer_url,
+                                                unsplash_download_location=unsplash_download_location
+                                            )
+                                            saved_news += 1
+                                        except Exception:
+                                            continue
+                                    logger.info(f"Saved {saved_news} news articles for {stock.symbol}")
+                            except Exception as e:
+                                logger.error(f"Error fetching news for alert: {str(e)}")
+
                         else:
                             logger.info(f"  Alert already exists for {stock.symbol}")
 
